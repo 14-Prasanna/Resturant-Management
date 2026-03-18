@@ -31,7 +31,7 @@ public class App {
 
         while (true) {
             System.out.println("\n=============================");
-            System.out.println("  Welcome to Restaurant App  ");
+            System.out.println("  Welcome to Expleo Resturant Hotel  ");
             System.out.println("=============================");
             System.out.println("1. Admin");
             System.out.println("2. Manager");
