@@ -13,7 +13,7 @@ public class App {
         Scanner scanner = new Scanner(System.in);
 
         // Shared services
-        CustomerLoginService customerLoginService       = new CustomerLoginService();
+        CustomerLoginService customerLoginService = new CustomerLoginService();
         DeliveryBoyLoginService deliveryBoyLoginService = new DeliveryBoyLoginService();
 
         // Controllers
