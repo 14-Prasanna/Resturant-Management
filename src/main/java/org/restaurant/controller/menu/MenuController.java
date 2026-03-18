@@ -1,77 +1,109 @@
 package org.restaurant.controller.menu;
+import org.restaurant.service.menu.MenuService;
+import org.restaurant.model.menu.MenuItem;
 import java.util.*;
-public class MenuController {
-	private Scanner scanner;
 
-	public MenuController(Scanner scanner) {
-		this.scanner = scanner;
-	}
-	public void showmenu() {
-		while(true) {
-			 System.out.println("\n--- MENU ---");
-	            System.out.println("1. Morning Menu");
-	            System.out.println("2. Afternoon Menu");
-	            System.out.println("3. Night Menu");
-	            System.out.println("0. Back");
-	            System.out.print("Choice: ");
-	            
-	            int choice  = scanner.nextInt();
-	            scanner.nextLine();
-	            
-	            switch(choice) {
-	            case 1 -> showMorningMenu();
-	            case 2 -> showAfternoonMenu();
-                case 3 -> showNightMenu();
-                case 4 -> showsnacks();
-                case 0 -> {
-                    System.out.println("Returning...");
-                    return;
-                }
+public class MenuController {
+    private Scanner scanner;
+    private MenuService service = new MenuService();
+
+    public MenuController(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public void showMenu() {
+        while (true) {
+            System.out.println("\n--- MENU ---");
+            System.out.println("1. View Menu");
+            System.out.println("2. Add Item");
+            System.out.println("3. Update Item");
+            System.out.println("4. Delete Item");
+            System.out.println("0. Back");
+            System.out.print("Choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1 -> displayMenu();
+                case 2 -> addItemFlow();
+                case 3 -> updateItemFlow();
+                case 4 -> deleteItemFlow();
+                case 0 -> { return; }
                 default -> System.out.println("Invalid choice");
-	            }
-		}
-	}
-	private void showMorningMenu(){
-		System.out.println("\n--- Morning Menu ---");
-		System.out.println("1. Idly");
-		System.out.println("2. Dosa");
-		System.out.println("3. Pongal");
-		System.out.println("4. Mini tiffin");
-		System.out.println("5. Sambar vada");
-		System.out.println("6. Poori");
-		System.out.println("7. Chapati");
-	}
-	private void showAfternoonMenu(){
-		System.out.println("\n--- Afternoon Menu ---");
-		System.out.println("1. Meals");
-		System.out.println("2. Veg briyani");
-		System.out.println("3. Tomato rice");
-		System.out.println("4. Curd rice");
-		System.out.println("5. Chicken Briyani");
-		System.out.println("6. Mutton briyani");
-		System.out.println("7. Kuska");
-		System.out.println("8. Chicken gravy");
-		System.out.println("9. Paneer briyani");
-		System.out.println("10. mushroom briyani");
-	}
-	private void showNightMenu(){
-		 System.out.println("\n--- Night Menu ---");
-		System.out.println("1. Idly");
-		System.out.println("2. Dosa");
-		System.out.println("3. Parotta");
-		System.out.println("4. Noodels");
-		System.out.println("5. Fried Rice");
-		System.out.println("6. Egg roast");
-		System.out.println("7. Chicken kothu parotta");
-		System.out.println("8. chola poori");
-	}
-	private void showsnacks() {
-		System.out.println("\n--- Snacks Menu ---");
-	    System.out.println("1. Samosa");
-	    System.out.println("2. Bajji");
-	    System.out.println("3. Vada");
-	    System.out.println("4. Sandwich");
-	}
-	
-	
+            }
+        }
+    }
+
+    // Helper to select meal time
+    private String selectMealTime() {
+        System.out.println("\nSelect Meal Time:");
+        System.out.println("1. Morning");
+        System.out.println("2. Afternoon");
+        System.out.println("3. Night");
+        System.out.println("4. Snacks");
+        System.out.print("Choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        return switch (choice) {
+            case 1 -> "Morning";
+            case 2 -> "Afternoon";
+            case 3 -> "Night";
+            case 4 -> "Snacks";
+            default -> {
+                System.out.println("Invalid choice, defaulting to Snacks.");
+                yield "Snacks";
+            }
+        };
+    }
+
+    private void displayMenu() {
+        Collection<MenuItem> items = service.getMenuItems();
+        if (items.isEmpty()) {
+            System.out.println("No items available");
+            return;
+        }
+        int i = 1;
+        for (MenuItem item : items) {
+            System.out.println(i++ + ". [" + item.getMealTime() + "] "
+                    + item.getName()
+                    + " | " + item.getDescription()
+                    + " | Rating: " + item.getRating());
+        }
+    }
+
+    private void addItemFlow() {
+        System.out.print("Enter item name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter description: ");
+        String desc = scanner.nextLine();
+        System.out.print("Enter rating: ");
+        double rating = scanner.nextDouble();
+        scanner.nextLine();
+        String mealTime = selectMealTime(); // NEW
+
+        boolean added = service.addMenuItem(name, desc, rating, mealTime);
+        System.out.println(added ? "Item added successfully!" : "Item already exists!");
+    }
+
+    private void updateItemFlow() {
+        System.out.print("Enter item name to update: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter new description: ");
+        String desc = scanner.nextLine();
+        System.out.print("Enter new rating: ");
+        double rating = scanner.nextDouble();
+        scanner.nextLine();
+        String mealTime = selectMealTime(); // NEW
+
+        boolean updated = service.updateMenuItem(name, desc, rating, mealTime);
+        System.out.println(updated ? "Item updated successfully!" : "Item not found!");
+    }
+
+    private void deleteItemFlow() {
+        System.out.print("Enter item name to delete: ");
+        String name = scanner.nextLine();
+        boolean deleted = service.deleteMenuItem(name);
+        System.out.println(deleted ? "Item deleted successfully!" : "Item not found!");
+    }
 }

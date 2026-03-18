@@ -1,5 +1,4 @@
 package org.restaurant.controller.login;
-
 import org.restaurant.controller.menu.MenuController;
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.model.login.DeliveryBoyLogin;
@@ -45,7 +44,7 @@ public class AdminLoginController {
             System.out.println("\n--- Admin Dashboard ---");
             System.out.println("Logged in as: " + username);
             MenuController menuController = new MenuController(scanner);
-            menuController.showmenu();
+            menuController.showMenu();
             System.out.println("2. View All Customers");
             System.out.println("3. View All Delivery Boys");
             System.out.println("0. Logout");
