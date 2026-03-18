@@ -83,7 +83,7 @@ public class CustomerLoginController {
                     System.out.println("Logged out. Returning to main menu...");
                     return;
                 }
-                default -> System.out.println("Invalid option.");
+                default -> System.out.println(" ❌ Invalid option.");
             }
         }
     }
@@ -91,7 +91,7 @@ public class CustomerLoginController {
     private void viewPastOrders(CustomerLogin customer) {
         System.out.println("\n--- My Past Orders ---");
         if (customer.getPastOrders().isEmpty()) {
-            System.out.println("No orders yet.");
+            System.out.println(" 📑 No orders yet.");
         } else {
             for (String order : customer.getPastOrders()) {
                 System.out.println("- " + order);
@@ -102,7 +102,7 @@ public class CustomerLoginController {
     private void viewReports(CustomerLogin customer) {
         System.out.println("\n--- My Reports ---");
         if (customer.getReports().isEmpty()) {
-            System.out.println("No reports yet.");
+            System.out.println(" 📑 No reports yet.");
         } else {
             for (String report : customer.getReports()) {
                 System.out.println("- " + report);
