@@ -1,4 +1,5 @@
 package org.restaurant.controller.login;
+
 import org.restaurant.controller.menu.MenuController;
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.model.login.DeliveryBoyLogin;
@@ -6,7 +7,6 @@ import org.restaurant.service.login.AdminLoginService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
 import java.util.Scanner;
-
 
 public class AdminLoginController {
     private Scanner scanner;
@@ -43,8 +43,7 @@ public class AdminLoginController {
         while (true) {
             System.out.println("\n--- Admin Dashboard ---");
             System.out.println("Logged in as: " + username);
-            MenuController menuController = new MenuController(scanner);
-            menuController.showMenu();
+            System.out.println("1. Manage Menu");
             System.out.println("2. View All Customers");
             System.out.println("3. View All Delivery Boys");
             System.out.println("0. Logout");
@@ -54,7 +53,10 @@ public class AdminLoginController {
             scanner.nextLine();
 
             switch (choice) {
-                case 1 -> System.out.println("Menu management coming soon...");
+                case 1 -> {
+                    MenuController menuController = new MenuController(scanner);
+                    menuController.showMenu();
+                }
                 case 2 -> viewAllCustomers();
                 case 3 -> viewAllDeliveryBoys();
                 case 0 -> {
