@@ -41,11 +41,11 @@ public class ManagerLoginController {
     private void managerDashboard(String username) {
         while (true) {
             System.out.println("\n--- Manager Dashboard ---");
-            System.out.println("Logged in as: " + username);
-            System.out.println("1. View Menu (coming soon)");
-            System.out.println("2. View All Customers");
-            System.out.println("3. View All Delivery Boys");
-            System.out.println("0. Logout");
+            System.out.println("Logged in as: " + "👤"+username);
+            System.out.println("1. 📑 View Menu (coming soon)");
+            System.out.println("2. 👳🏻   View All Customers");
+            System.out.println("3.🚶🏻 View All Delivery Boys");
+            System.out.println("0.🗝 Logout");
             System.out.print("Choice: ");
 
             int choice = scanner.nextInt();
