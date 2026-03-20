@@ -6,19 +6,35 @@ import java.util.*;
 public class MenuService {
     private MenuRepository repo = new MenuRepository();
 
-    public boolean addMenuItem(String name, String desc, double rating, String mealTime) {
-        return repo.addItem(new MenuItem(name, desc, rating, mealTime));
+    public boolean addMenuItem(String productId, String name, String desc, double rating, double price, String mealTime) {
+        return repo.addItem(new MenuItem(productId, name, desc, rating, price, mealTime));
     }
 
     public Collection<MenuItem> getMenuItems() {
         return repo.getAllItems();
     }
 
-    public boolean updateMenuItem(String name, String desc, double rating, String mealTime) {
-        return repo.updateItem(name, desc, rating, mealTime);
+    public Collection<MenuItem> getMenuItemsByMealTime(String mealTime) {
+        return repo.getItemsByMealTime(mealTime);
     }
 
-    public boolean deleteMenuItem(String name) {
-        return repo.deleteItem(name);
+    public MenuItem getItemByProductId(String productId) {
+        return repo.getItemByProductId(productId);
+    }
+
+    public boolean existsByNameAndMealTime(String name, String mealTime) {
+        return repo.existsByNameAndMealTime(name, mealTime);
+    }
+
+    public List<String> getMealTimesForName(String name) {
+        return repo.getMealTimesForName(name);
+    }
+
+    public boolean updateField(String productId, String field, String value) {
+        return repo.updateField(productId, field, value);
+    }
+
+    public boolean deleteMenuItem(String productId) {
+        return repo.deleteItem(productId);
     }
 }
