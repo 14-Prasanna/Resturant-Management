@@ -34,7 +34,7 @@ public class MenuController {
         }
     }
 
-    private String selectMealTime() {
+    public String selectMealTime() {
         System.out.println("\nSelect Meal Time:");
         System.out.println("1. Morning");
         System.out.println("2. Afternoon");
