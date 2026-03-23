@@ -5,15 +5,12 @@ import org.restaurant.repository.login.CustomerLoginRepo;
 import java.util.Collection;
 
 public class CustomerLoginService {
+    private CustomerLoginRepo customerLoginRepo = CustomerLoginRepo.getInstance();
 
-    private CustomerLoginRepo customerLoginRepo = new CustomerLoginRepo();
-
-    // Register
     public boolean register(String username, String password) {
         return customerLoginRepo.register(username, password);
     }
 
-    // Login
     public CustomerLogin login(String username, String password) {
         CustomerLogin customer = customerLoginRepo.findByUsername(username);
         if (customer != null && customer.getPassword().equals(password)) {
@@ -22,7 +19,6 @@ public class CustomerLoginService {
         return null;
     }
 
-    // Add order to customer
     public void addOrder(String username, String order) {
         CustomerLogin customer = customerLoginRepo.findByUsername(username);
         if (customer != null) {
@@ -30,7 +26,6 @@ public class CustomerLoginService {
         }
     }
 
-    // Add report to customer
     public void addReport(String username, String report) {
         CustomerLogin customer = customerLoginRepo.findByUsername(username);
         if (customer != null) {
@@ -38,7 +33,6 @@ public class CustomerLoginService {
         }
     }
 
-    // Get all customers (Admin & Manager use)
     public Collection<CustomerLogin> getAllCustomers() {
         return customerLoginRepo.getAllCustomers();
     }

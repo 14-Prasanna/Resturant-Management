@@ -56,7 +56,7 @@ public class MenuController {
         };
     }
 
-    private void displayMenu() {
+    public void displayMenu() {
         System.out.println("\nView menu for which meal time?");
         System.out.println("1. Morning");
         System.out.println("2. Afternoon");
