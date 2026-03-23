@@ -6,10 +6,14 @@ import org.restaurant.controller.login.CustomerLoginController;
 import org.restaurant.controller.login.DeliveryBoyLoginController;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
+import org.restaurant.config.CleverCloudDB;
 import java.util.Scanner;
 
 public class App {
     public static void main(String[] args) {
+
+        CleverCloudDB.testConnection();
+        CleverCloudDB.showTables();
         Scanner scanner = new Scanner(System.in);
 
         // Shared services
@@ -31,7 +35,7 @@ public class App {
 
         while (true) {
             System.out.println("\n=============================");
-            System.out.println("  Welcome to Expleo Resturant Hotel  ");
+            System.out.println("  Welcome to Annauku oru uthapam Hotel  ");
             System.out.println("=============================");
             System.out.println("1. Admin");
             System.out.println("2. Manager");
