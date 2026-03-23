@@ -4,13 +4,11 @@ import org.restaurant.controller.cart.CartController;
 import org.restaurant.controller.menu.MenuController;
 import org.restaurant.controller.order.OrderController;
 import org.restaurant.model.login.CustomerLogin;
-import org.restaurant.model.menu.MenuItem;
 import org.restaurant.service.cart.CartService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.menu.MenuService;
 import org.restaurant.service.order.OrderService;
 
-import java.util.Collection;
 import java.util.Scanner;
 
 public class CustomerLoginController {
@@ -61,7 +59,12 @@ public class CustomerLoginController {
 
         boolean registered = customerLoginService.register(username, password);
         if (registered) {
-            System.out.println("Registration successful! Please login to continue.");
+            // Auto-login after successful registration
+            CustomerLogin customer = customerLoginService.login(username, password);
+            if (customer != null) {
+                System.out.println("Welcome, " + customer.getUsername() + "!");
+                customerDashboard(customer);
+            }
         }
     }
 
@@ -78,14 +81,6 @@ public class CustomerLoginController {
             customerDashboard(customer);
         } else {
             System.out.println("Invalid credentials. Try again.");
-        }
-    }
-
-    private void loginWithCredentials(String username, String password) {
-        CustomerLogin customer = customerLoginService.login(username, password);
-        if (customer != null) {
-            System.out.println("Welcome, " + customer.getUsername() + "!");
-            customerDashboard(customer);
         }
     }
 
@@ -107,7 +102,7 @@ public class CustomerLoginController {
             scanner.nextLine();
 
             switch (choice) {
-                case 1 -> viewMenuAsCustomer();
+                case 1 -> menuController.displayMenu();
                 case 2 -> cartController.addToCart(customer.getUsername(), menuController.selectMealTime());
                 case 3 -> cartController.viewCart(customer.getUsername());
                 case 4 -> cartController.updateCartItem(customer.getUsername());
@@ -119,69 +114,6 @@ public class CustomerLoginController {
                     return;
                 }
                 default -> System.out.println("Invalid option.");
-            }
-        }
-    }
-
-    private void viewMenuAsCustomer() {
-        System.out.println("\nView menu for which meal time?");
-        System.out.println("1. Morning");
-        System.out.println("2. Afternoon");
-        System.out.println("3. Night");
-        System.out.println("4. Snacks");
-        System.out.println("5. All");
-        System.out.print("Choice: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-
-        String filter = switch (choice) {
-            case 1 -> "Morning";
-            case 2 -> "Afternoon";
-            case 3 -> "Night";
-            case 4 -> "Snacks";
-            default -> "All";
-        };
-
-        displayMenu(filter);
-    }
-
-    private void displayMenu(String filter) {
-        Collection<MenuItem> items = menuService.getMenuItemsByMealTime(filter);
-
-        if (items.isEmpty()) {
-            System.out.println("No items available for " + filter);
-            return;
-        }
-
-        System.out.println("\n--- " + filter.toUpperCase() + " MENU ---");
-        int i = 1;
-        for (MenuItem item : items) {
-            System.out.println(i++ + ". [" + item.getMealTime() + "] "
-                    + item.getName()
-                    + " | " + item.getDescription()
-                    + " | Price: ₹" + item.getPrice()
-                    + " | Rating: " + item.getRating());
-        }
-    }
-
-    private void viewPastOrders(CustomerLogin customer) {
-        System.out.println("\n--- My Past Orders ---");
-        if (customer.getPastOrders().isEmpty()) {
-            System.out.println("No orders yet.");
-        } else {
-            for (String order : customer.getPastOrders()) {
-                System.out.println("- " + order);
-            }
-        }
-    }
-
-    private void viewReports(CustomerLogin customer) {
-        System.out.println("\n--- My Reports ---");
-        if (customer.getReports().isEmpty()) {
-            System.out.println("No reports yet.");
-        } else {
-            for (String report : customer.getReports()) {
-                System.out.println("- " + report);
             }
         }
     }

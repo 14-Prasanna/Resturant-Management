@@ -6,11 +6,18 @@ import java.util.Map;
 import java.util.Collection;
 
 public class CustomerLoginRepo {
-
-    // Key = username, Value = CustomerLogin object (which has ArrayList inside)
+    private static CustomerLoginRepo instance;
     private Map<String, CustomerLogin> customerMap = new HashMap<>();
 
-    // Register new customer (any username & password)
+    private CustomerLoginRepo() {}
+
+    public static CustomerLoginRepo getInstance() {
+        if (instance == null) {
+            instance = new CustomerLoginRepo();
+        }
+        return instance;
+    }
+
     public boolean register(String username, String password) {
         if (customerMap.containsKey(username)) {
             System.out.println("Username already taken. Try another.");
@@ -21,12 +28,10 @@ public class CustomerLoginRepo {
         return true;
     }
 
-    // Find customer by username
     public CustomerLogin findByUsername(String username) {
         return customerMap.get(username);
     }
 
-    // Get all customers (for Admin & Manager view)
     public Collection<CustomerLogin> getAllCustomers() {
         return customerMap.values();
     }
