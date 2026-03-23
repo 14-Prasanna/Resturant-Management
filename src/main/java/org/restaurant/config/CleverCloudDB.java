@@ -27,6 +27,7 @@ public class CleverCloudDB {
             System.out.println("❌ DB Connection Failed");
             e.printStackTrace();
         }
+
     }
 
     // 📊 Show all tables
