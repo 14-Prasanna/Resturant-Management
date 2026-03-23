@@ -3,9 +3,12 @@ package org.restaurant.controller.login;
 import org.restaurant.controller.menu.MenuController;
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.model.login.DeliveryBoyLogin;
+import org.restaurant.model.order.Order;
 import org.restaurant.service.login.ManagerLoginService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
+import org.restaurant.service.order.OrderService;
+import java.util.List;
 import java.util.Scanner;
 
 public class ManagerLoginController {
@@ -13,13 +16,16 @@ public class ManagerLoginController {
     private ManagerLoginService managerLoginService = new ManagerLoginService();
     private CustomerLoginService customerLoginService;
     private DeliveryBoyLoginService deliveryBoyLoginService;
+    private OrderService orderService;
 
     public ManagerLoginController(Scanner scanner,
                                   CustomerLoginService customerLoginService,
-                                  DeliveryBoyLoginService deliveryBoyLoginService) {
-        this.scanner = scanner;
-        this.customerLoginService = customerLoginService;
+                                  DeliveryBoyLoginService deliveryBoyLoginService,
+                                  OrderService orderService) {
+        this.scanner                 = scanner;
+        this.customerLoginService    = customerLoginService;
         this.deliveryBoyLoginService = deliveryBoyLoginService;
+        this.orderService            = orderService;
     }
 
     public void start() {
@@ -42,10 +48,11 @@ public class ManagerLoginController {
     private void managerDashboard(String username) {
         while (true) {
             System.out.println("\n--- Manager Dashboard ---");
-            System.out.println("Logged in as: " +username);
+            System.out.println("Logged in as: " + username);
             System.out.println("1. Manage Menu");
             System.out.println("2. View All Customers");
             System.out.println("3. View All Delivery Boys");
+            System.out.println("4. View All Orders");
             System.out.println("0. Logout");
             System.out.print("Choice: ");
 
@@ -59,6 +66,7 @@ public class ManagerLoginController {
                 }
                 case 2 -> viewAllCustomers();
                 case 3 -> viewAllDeliveryBoys();
+                case 4 -> viewAllOrders();
                 case 0 -> {
                     System.out.println("Logged out successfully. Returning to main menu...");
                     return;
@@ -77,8 +85,20 @@ public class ManagerLoginController {
         for (CustomerLogin c : customerLoginService.getAllCustomers()) {
             System.out.println("---------------------------");
             System.out.println("Username : " + c.getUsername());
-            System.out.println("Orders   : " + (c.getPastOrders().isEmpty() ? "No orders"  : c.getPastOrders()));
-            System.out.println("Reports  : " + (c.getReports().isEmpty()    ? "No reports" : c.getReports()));
+
+            List<Order> orders = orderService.getOrdersByCustomer(c.getUsername());
+            if (orders.isEmpty()) {
+                System.out.println("Orders   : No orders");
+            } else {
+                System.out.println("Orders   :");
+                for (Order o : orders) {
+                    System.out.println("  Order ID : " + o.getOrderId()
+                            + " | Total: ₹" + o.getTotalAmount()
+                            + " | Status: "  + o.getStatus()
+                            + " | Placed At: " + o.getPlacedAt());
+                }
+            }
+            System.out.println("Reports  : " + (c.getReports().isEmpty() ? "No reports" : c.getReports()));
         }
         System.out.println("---------------------------");
     }
@@ -94,6 +114,29 @@ public class ManagerLoginController {
             System.out.println("Username         : " + d.getUsername());
             System.out.println("Assigned Orders  : " + (d.getAssignedOrders().isEmpty()  ? "No assigned orders"  : d.getAssignedOrders()));
             System.out.println("Delivery History : " + (d.getDeliveryHistory().isEmpty() ? "No delivery history" : d.getDeliveryHistory()));
+        }
+        System.out.println("---------------------------");
+    }
+
+    private void viewAllOrders() {
+        System.out.println("\n--- All Orders ---");
+        List<Order> allOrders = orderService.getAllOrders();
+        if (allOrders.isEmpty()) {
+            System.out.println("No orders placed yet.");
+            return;
+        }
+        for (Order o : allOrders) {
+            System.out.println("---------------------------");
+            System.out.println("Order ID   : " + o.getOrderId());
+            System.out.println("Customer   : " + o.getCustomerId());
+            System.out.println("Total      : ₹" + o.getTotalAmount());
+            System.out.println("Status     : " + o.getStatus());
+            System.out.println("Placed At  : " + o.getPlacedAt());
+            System.out.println("Items      :");
+            o.getItems().forEach(item ->
+                    System.out.println("  - " + item.getName()
+                            + " x" + item.getQuantity()
+                            + " | ₹" + item.getTotalPrice()));
         }
         System.out.println("---------------------------");
     }

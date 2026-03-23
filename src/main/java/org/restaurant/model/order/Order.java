@@ -30,4 +30,5 @@ public class Order {
     public double getTotalAmount()  { return totalAmount; }
     public String getStatus()       { return status; }
     public String getPlacedAt()     { return placedAt; }
+    public double getTotal() { return totalAmount; }
 }
