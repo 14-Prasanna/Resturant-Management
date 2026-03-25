@@ -28,7 +28,6 @@ public class App {
 
         ManagerLoginController managerLoginController
                 = new ManagerLoginController(scanner, customerLoginService, deliveryBoyLoginService);
-
         while (true) {
             System.out.println("\n=============================");
             System.out.println("  Welcome to Restaurant App  ");
