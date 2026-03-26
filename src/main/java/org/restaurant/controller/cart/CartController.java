@@ -188,7 +188,7 @@ public class CartController {
     }
 
     // =========================================================================
-    // INPUT HELPERS
+    // INPUT HELPER
     // =========================================================================
 
     /** Reads a positive integer (>0). Returns -1 on invalid input. */
