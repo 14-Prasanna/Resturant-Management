@@ -7,86 +7,88 @@ import org.restaurant.model.payment.Payment.PaymentStatus;
 import org.restaurant.repository.order.OrderRepository;
 import org.restaurant.repository.payment.PaymentRepository;
 
+import java.util.List;
 import java.util.UUID;
 
-/**
- * PaymentService — processes payment for a placed order.
- *
- * Responsibilities:
- *   1. Receive orderId + chosen PaymentMethod from PaymentController.
- *   2. Look up the Order from OrderRepository (reusing existing repo).
- *   3. Simulate payment (Cash on Delivery always succeeds; Card/UPI
- *      are simulated with a fixed success response).
- *   4. Save the Payment record in PaymentRepository.
- *   5. Return the Payment result to the controller.
- *
- * No real payment gateway is integrated — this is a clean simulation.
- */
 public class PaymentService {
 
     private OrderRepository   orderRepository   = OrderRepository.getInstance();
     private PaymentRepository paymentRepository = PaymentRepository.getInstance();
 
-    /**
-     * Processes payment for the given order using the specified method.
-     *
-     * @param orderId       The ID of the order to pay for.
-     * @param customerId    The customer making the payment.
-     * @param paymentMethod The chosen payment method.
-     * @return Payment object with SUCCESS or FAILED status.
-     *         Returns null if the orderId does not exist.
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // PROCESS PAYMENT
+    //  1. Fetch order from DB
+    //  2. Create payment row as PENDING
+    //  3. Simulate gateway
+    //  4. Update payment row to SUCCESS / FAILED + set transaction_id
+    //  5. On SUCCESS → advance order_status to PROCESSING
+    // ─────────────────────────────────────────────────────────────────────────
     public Payment processPayment(String orderId, String customerId, PaymentMethod paymentMethod) {
-        // Look up the order — reuse existing OrderRepository.getInstance()
-        Order order = orderRepository.getAllOrders().stream()
-                .filter(o -> o.getOrderId().equals(orderId))
-                .findFirst()
-                .orElse(null);
 
+        Order order = orderRepository.findById(orderId);
         if (order == null) {
-            return null;  // Order not found — controller will handle this
+            System.out.println("❌ Order not found: " + orderId);
+            return null;
         }
 
         String  paymentId = "PAY-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         Payment payment   = new Payment(paymentId, orderId, customerId,
                 order.getTotalAmount(), paymentMethod);
 
-        // Simulate payment processing
-        boolean success = simulatePayment(paymentMethod);
-
-        payment.setPaymentStatus(success ? PaymentStatus.SUCCESS : PaymentStatus.FAILED);
-
-        // Save the payment record
+        // Persist PENDING first
         paymentRepository.savePayment(payment);
+
+        // Simulate gateway response
+        boolean success       = simulatePayment(paymentMethod);
+        String  transactionId = success
+                ? "TXN-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase()
+                : null;
+
+        PaymentStatus finalStatus = success ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+        payment.setPaymentStatus(finalStatus);
+        payment.setTransactionId(transactionId);
+
+        // Update DB with final status
+        paymentRepository.updatePaymentStatus(paymentId, finalStatus.name(), transactionId);
+
+        // If paid → move order forward
+        if (success) {
+            orderRepository.updateOrderStatus(orderId, "PROCESSING");
+        }
 
         return payment;
     }
 
-    /**
-     * Simulates the payment gateway response.
-     * - Cash on Delivery: always succeeds (no real-time processing needed).
-     * - Card / UPI: simulated as always successful for this demo.
-     *
-     * In a real system, this method would call an external payment API.
-     */
-    private boolean simulatePayment(PaymentMethod method) {
-        switch (method) {
-            case CASH_ON_DELIVERY:
-                return true;   // No processing required — always succeeds
-            case CARD:
-                return true;   // Simulated card payment — always succeeds
-            case UPI:
-                return true;   // Simulated UPI payment — always succeeds
-            default:
-                return false;
-        }
+    // ─────────────────────────────────────────────────────────────────────────
+    // MANUAL STATUS UPDATE  (admin override)
+    // ─────────────────────────────────────────────────────────────────────────
+    public boolean updatePaymentStatus(String paymentId, String newStatus) {
+        return paymentRepository.updatePaymentStatus(paymentId, newStatus, null);
     }
 
-    /**
-     * Retrieves the payment record linked to an order.
-     * Used by controllers to display payment confirmation.
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // QUERIES
+    // ─────────────────────────────────────────────────────────────────────────
     public Payment getPaymentByOrderId(String orderId) {
         return paymentRepository.getPaymentByOrderId(orderId);
+    }
+
+    public Payment getPaymentById(String paymentId) {
+        return paymentRepository.getPaymentById(paymentId);
+    }
+
+    public List<Payment> getPaymentsByCustomer(String customerId) {
+        return paymentRepository.getPaymentsByCustomer(customerId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SIMULATE GATEWAY  –  swap with real API in production
+    // ─────────────────────────────────────────────────────────────────────────
+    private boolean simulatePayment(PaymentMethod method) {
+        return switch (method) {
+            case CASH_ON_DELIVERY -> true;
+            case CARD             -> true;
+            case UPI              -> true;
+        };
     }
 }

@@ -58,6 +58,21 @@
       <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
+    <!-- Twilio SDK -->
+    <dependency>
+      <groupId>com.twilio.sdk</groupId>
+      <artifactId>twilio</artifactId>
+      <version>9.14.0</version>
+    </dependency>
+
+    <!-- Dotenv (for reading .env file) -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
+
 
   </dependencies>
 
@@ -75,6 +90,7 @@
           <target>21</target>
         </configuration>
       </plugin>
+
 
     </plugins>
   </build>

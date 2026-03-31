@@ -5,7 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="abb963d7-0d15-4ca6-a561-1bb50abbd5fa" name="Changes" comment="Created Checkout and Payment module">
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/checkout/CheckoutRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/checkout/CheckoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/checkout/CheckoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/CustomerLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/CustomerLoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/DeliveryBoyLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/DeliveryBoyLoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/model/checkout/Checkout.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/model/checkout/Checkout.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/model/order/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/model/order/Order.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/model/payment/Payment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/model/payment/Payment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/cart/CartRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/cart/CartRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/login/CustomerLoginRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/login/CustomerLoginRepo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/menu/MenuRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/menu/MenuRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/order/OrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/order/OrderRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/payment/PaymentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/payment/PaymentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/cart/CartService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/cart/CartService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/checkout/CheckoutService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/checkout/CheckoutService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/login/CustomerLoginService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/login/CustomerLoginService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/menu/MenuService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/menu/MenuService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/order/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/order/OrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/payment/PaymentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/payment/PaymentService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,34 +69,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.App.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/vithy/git/Resturant-Management&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.App.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "Customer",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/vithy/git/Resturant-Management",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.restaurant.App" />
@@ -127,6 +149,12 @@
       <workItem from="1774284935973" duration="16000" />
       <workItem from="1774284972881" duration="1785000" />
       <workItem from="1774359398905" duration="7813000" />
+      <workItem from="1774937872484" duration="3326000" />
+      <workItem from="1774941270110" duration="970000" />
+      <workItem from="1774942295677" duration="4000" />
+      <workItem from="1774942347301" duration="497000" />
+      <workItem from="1774942883125" duration="125000" />
+      <workItem from="1774943053628" duration="11146000" />
     </task>
     <task id="LOCAL-00001" summary="Created Checkout and Payment module">
       <option name="closed" value="true" />

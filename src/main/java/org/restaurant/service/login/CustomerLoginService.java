@@ -1,5 +1,6 @@
 package org.restaurant.service.login;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.repository.login.CustomerLoginRepo;
 import org.mindrot.jbcrypt.BCrypt;

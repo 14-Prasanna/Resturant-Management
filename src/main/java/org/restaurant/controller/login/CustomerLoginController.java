@@ -11,6 +11,7 @@ import org.restaurant.service.checkout.CheckoutService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.menu.MenuService;
 import org.restaurant.service.order.OrderService;
+import org.restaurant.service.otp.OtpService;
 import org.restaurant.service.payment.PaymentService;
 
 import java.util.Scanner;
@@ -43,7 +44,7 @@ public class CustomerLoginController {
         this.orderController    = new OrderController(scanner, orderService);
         this.paymentController  = new PaymentController(scanner, paymentService);
         this.checkoutController = new CheckoutController(scanner, checkoutService,
-                orderService, paymentController);
+                orderService, paymentController, paymentService, cartService);
     }
 
     public void start() {

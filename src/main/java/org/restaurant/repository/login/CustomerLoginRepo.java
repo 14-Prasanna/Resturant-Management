@@ -45,50 +45,55 @@ public class CustomerLoginRepo {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("❌ Registration error: " + e.getMessage());
             return false;
         }
     }
 
+    // ─────────────────────────────────────────────
+    // LOGIN – find customer by username
+    // ─────────────────────────────────────────────
     public CustomerLogin findByUsername(String username) {
-        String sql = "SELECT * FROM customer_login WHERE username = ?";
+        String sql = "SELECT username, password FROM customer_login WHERE username = ?";
+
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, username);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new CustomerLogin(
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("email"),
-                        rs.getString("phone")
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new CustomerLogin(
+                            rs.getString("username"),
+                            rs.getString("password")
+                    );
+                }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("❌ Login lookup error: " + e.getMessage());
         }
         return null;
     }
 
+    // ─────────────────────────────────────────────
+    // GET ALL CUSTOMERS
+    // ─────────────────────────────────────────────
     public Collection<CustomerLogin> getAllCustomers() {
-        List<CustomerLogin> list = new ArrayList<>();
-        String sql = "SELECT * FROM customer_login";
+        List<CustomerLogin> customers = new ArrayList<>();
+        String sql = "SELECT username, password FROM customer_login";
+
         try (Connection con = CleverCloudDB.getConnection();
-             Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+             Statement st  = con.createStatement();
+             ResultSet rs  = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                list.add(new CustomerLogin(
+                customers.add(new CustomerLogin(
                         rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("email"),
-                        rs.getString("phone")
+                        rs.getString("password")
                 ));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("❌ Error fetching all customers: " + e.getMessage());
         }
-        return list;
+        return customers;
     }
 }

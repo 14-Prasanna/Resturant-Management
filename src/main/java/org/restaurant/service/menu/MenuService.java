@@ -1,12 +1,16 @@
 package org.restaurant.service.menu;
+
 import org.restaurant.model.menu.MenuItem;
 import org.restaurant.repository.menu.MenuRepository;
+
 import java.util.*;
 
 public class MenuService {
+
     private MenuRepository repo = MenuRepository.getInstance();
 
-    public boolean addMenuItem(String productId, String name, String desc, double rating, double price, String mealTime) {
+    public boolean addMenuItem(String productId, String name, String desc,
+                               double rating, double price, String mealTime) {
         return repo.addItem(new MenuItem(productId, name, desc, rating, price, mealTime));
     }
 
