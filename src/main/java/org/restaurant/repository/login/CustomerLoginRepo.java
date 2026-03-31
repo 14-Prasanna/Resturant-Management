@@ -19,30 +19,31 @@ public class CustomerLoginRepo {
         return instance;
     }
 
-    // ─────────────────────────────────────────────
-    // REGISTER – insert new customer into DB
-    // ─────────────────────────────────────────────
-    public boolean register(String username, String password) {
-        // First check if username already exists
-        if (findByUsername(username) != null) {
-            System.out.println("Username already taken. Try another.");
-            return false;
-        }
-
-        String sql = "INSERT INTO customer_login (username, password) VALUES (?, ?)";
+    // Register with all fields stored to DB
+    public boolean register(String username, String hashedPassword, String email, String phone) {
+        String checkSql  = "SELECT username FROM customer_login WHERE username = ?";
+        String insertSql = "INSERT INTO customer_login (username, password, email, phone) VALUES (?, ?, ?, ?)";
 
         try (Connection con = CleverCloudDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement checkPs = con.prepareStatement(checkSql)) {
 
-            ps.setString(1, username);
-            ps.setString(2, password);
-            ps.executeUpdate();
-            System.out.println("Registration successful!");
-            return true;
+            checkPs.setString(1, username);
+            ResultSet rs = checkPs.executeQuery();
+            if (rs.next()) {
+                System.out.println("Username already taken. Try another.");
+                return false;
+            }
 
-        } catch (SQLIntegrityConstraintViolationException e) {
-            System.out.println("Username already taken. Try another.");
-            return false;
+            try (PreparedStatement insertPs = con.prepareStatement(insertSql)) {
+                insertPs.setString(1, username);
+                insertPs.setString(2, hashedPassword);
+                insertPs.setString(3, email);
+                insertPs.setString(4, phone);
+                insertPs.executeUpdate();
+                System.out.println("Registration successful!");
+                return true;
+            }
+
         } catch (Exception e) {
             System.out.println("❌ Registration error: " + e.getMessage());
             return false;

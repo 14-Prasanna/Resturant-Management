@@ -18,9 +18,8 @@ import java.util.Scanner;
 
 public class CustomerLoginController {
 
-    private Scanner              scanner;
+    private Scanner scanner;
     private CustomerLoginService customerLoginService;
-    private OtpService           otpService = new OtpService();
 
     // Services (declared ONCE)
     private MenuService     menuService     = new MenuService();
@@ -40,11 +39,9 @@ public class CustomerLoginController {
         this.scanner              = scanner;
         this.customerLoginService = customerLoginService;
 
-        this.cartController    = new CartController(scanner, cartService, menuService);
-        this.menuController    = new MenuController(scanner);
-        this.orderController   = new OrderController(scanner, orderService);
-
-        // PaymentController must be created before CheckoutController (it is injected)
+        this.cartController     = new CartController(scanner, cartService, menuService);
+        this.menuController     = new MenuController(scanner);
+        this.orderController    = new OrderController(scanner, orderService);
         this.paymentController  = new PaymentController(scanner, paymentService);
         this.checkoutController = new CheckoutController(scanner, checkoutService,
                 orderService, paymentController, paymentService, cartService);
@@ -76,8 +73,12 @@ public class CustomerLoginController {
         String username = scanner.nextLine();
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Phone (10 digits): ");
+        String phone = scanner.nextLine();
 
-        boolean registered = customerLoginService.register(username, password);
+        boolean registered = customerLoginService.register(username, password, email, phone);
         if (registered) {
             CustomerLogin customer = customerLoginService.login(username, password);
             if (customer != null) {
@@ -127,7 +128,7 @@ public class CustomerLoginController {
                 case 6 -> checkoutController.startCheckout(customer.getUsername());
                 case 7 -> orderController.viewMyOrders(customer.getUsername());
                 case 0 -> {
-                    System.out.println("Logged out. Returning to main menu...");
+                    System.out.println("Logged out.");
                     return;
                 }
                 default -> System.out.println("Invalid option.");
