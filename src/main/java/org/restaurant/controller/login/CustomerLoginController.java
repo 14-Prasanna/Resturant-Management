@@ -15,49 +15,22 @@ import org.restaurant.service.payment.PaymentService;
 
 import java.util.Scanner;
 
-/**
- * CustomerLoginController (updated)
- *
- * Changes from the original:
- *   - Added option 6 → Checkout (new flow: Cart → Checkout → Order → Payment)
- *   - Old option 6 "Place Order" moved to option 8 (kept for direct use)
- *   - All new services/controllers wired in constructor
- */
 public class CustomerLoginController {
 
-    private Scanner              scanner;
+    private Scanner scanner;
     private CustomerLoginService customerLoginService;
-    private OtpService otpService = new OtpService();
 
-    // Services
-    private MenuService menuService         = new MenuService();
-    private CartService cartService         = new CartService();
-    private OrderService orderService       = new OrderService(cartService);   // ✅ pass CartService
-    private CheckoutService checkoutService = new CheckoutService(cartService);
-    private PaymentService paymentService   = new PaymentService();            // ✅ no args needed
-
-    // Controllers
-    private CartController cartController;
-    private MenuController menuController;
-    private OrderController orderController;
-    private PaymentController paymentController;
-    private CheckoutController checkoutController;
-
-    // Existing services (unchanged)
-    private MenuService    menuService    = new MenuService();
-    private CartService    cartService    = new CartService();
-    private OrderService   orderService   = new OrderService(cartService);
-
-    // New services
+    // Services (declared ONCE)
+    private MenuService     menuService     = new MenuService();
+    private CartService     cartService     = new CartService();
+    private OrderService    orderService    = new OrderService(cartService);
     private CheckoutService checkoutService = new CheckoutService(cartService);
     private PaymentService  paymentService  = new PaymentService();
 
-    // Existing controllers (unchanged)
-    private CartController  cartController;
-    private MenuController  menuController;
-    private OrderController orderController;
-
-    // New controllers
+    // Controllers (declared ONCE)
+    private CartController     cartController;
+    private MenuController     menuController;
+    private OrderController    orderController;
     private PaymentController  paymentController;
     private CheckoutController checkoutController;
 
@@ -65,11 +38,9 @@ public class CustomerLoginController {
         this.scanner              = scanner;
         this.customerLoginService = customerLoginService;
 
-        this.cartController    = new CartController(scanner, cartService, menuService);
-        this.menuController    = new MenuController(scanner);
-        this.orderController   = new OrderController(scanner, orderService);
-
-        // PaymentController must be created before CheckoutController (it is injected)
+        this.cartController     = new CartController(scanner, cartService, menuService);
+        this.menuController     = new MenuController(scanner);
+        this.orderController    = new OrderController(scanner, orderService);
         this.paymentController  = new PaymentController(scanner, paymentService);
         this.checkoutController = new CheckoutController(scanner, checkoutService,
                 orderService, paymentController);
@@ -101,8 +72,12 @@ public class CustomerLoginController {
         String username = scanner.nextLine();
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Phone (10 digits): ");
+        String phone = scanner.nextLine();
 
-        boolean registered = customerLoginService.register(username, password);
+        boolean registered = customerLoginService.register(username, password, email, phone);
         if (registered) {
             CustomerLogin customer = customerLoginService.login(username, password);
             if (customer != null) {
@@ -152,7 +127,7 @@ public class CustomerLoginController {
                 case 6 -> checkoutController.startCheckout(customer.getUsername());
                 case 7 -> orderController.viewMyOrders(customer.getUsername());
                 case 0 -> {
-                    System.out.println("Logged out. Returning to main menu...");
+                    System.out.println("Logged out.");
                     return;
                 }
                 default -> System.out.println("Invalid option.");

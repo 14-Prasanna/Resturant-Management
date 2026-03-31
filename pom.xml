@@ -5,7 +5,7 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- Project Identity -->
+  <!-- Project Identity (unchanged) -->
   <groupId>org.restaurant</groupId>
   <artifactId>restaurant-management</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -30,8 +30,28 @@
       <version>8.0.33</version>
     </dependency>
 
+    <!-- BCrypt for password hashing -->
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
 
-    <!-- JUnit (Updated) -->
+    <!-- Dotenv for .env file loading -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
+    <!-- Twilio for OTP SMS -->
+    <dependency>
+      <groupId>com.twilio.sdk</groupId>
+      <artifactId>twilio</artifactId>
+      <version>9.14.0</version>
+    </dependency>
+
+    <!-- JUnit -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -45,7 +65,7 @@
   <build>
     <plugins>
 
-      <!-- Compiler Plugin (Java 21 aligned) -->
+      <!-- Compiler Plugin (Java 21) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
