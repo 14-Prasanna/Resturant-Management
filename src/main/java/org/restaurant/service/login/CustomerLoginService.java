@@ -2,6 +2,7 @@ package org.restaurant.service.login;
 
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.repository.login.CustomerLoginRepo;
+import org.mindrot.jbcrypt.BCrypt;
 import java.util.Collection;
 
 public class CustomerLoginService {
@@ -24,13 +25,23 @@ public class CustomerLoginService {
         if (customer != null) {
             customer.addOrder(order);
         }
+        if (phone == null || phone.length() != 10) {
+            System.out.println("Phone must be 10 digits!");
+            return false;
+        }
+
+        // Hash password before storing
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        return customerLoginRepo.register(username, hashedPassword, email, phone);
     }
 
     public void addReport(String username, String report) {
         CustomerLogin customer = customerLoginRepo.findByUsername(username);
-        if (customer != null) {
-            customer.addReport(report);
+        if (customer != null && BCrypt.checkpw(password, customer.getPassword())) {
+            return customer;
         }
+        System.out.println("Invalid credentials. Try again.");
+        return null;
     }
 
     public Collection<CustomerLogin> getAllCustomers() {

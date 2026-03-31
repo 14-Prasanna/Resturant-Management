@@ -9,6 +9,7 @@ public class DeliveryBoyLoginController {
 
     private Scanner scanner;
     private DeliveryBoyLoginService deliveryBoyLoginService;
+    private OtpService otpService = new OtpService();
 
     public DeliveryBoyLoginController(Scanner scanner,
                                          DeliveryBoyLoginService deliveryBoyLoginService) {
@@ -25,7 +26,6 @@ public class DeliveryBoyLoginController {
             System.out.println("4. Mark Order as Delivered");
             System.out.println("0. Back");
             System.out.print("Choice: ");
-
             int choice = scanner.nextInt();
             scanner.nextLine();
 

@@ -27,6 +27,21 @@ public class CustomerLoginController {
 
     private Scanner              scanner;
     private CustomerLoginService customerLoginService;
+    private OtpService otpService = new OtpService();
+
+    // Services
+    private MenuService menuService         = new MenuService();
+    private CartService cartService         = new CartService();
+    private OrderService orderService       = new OrderService(cartService);   // ✅ pass CartService
+    private CheckoutService checkoutService = new CheckoutService(cartService);
+    private PaymentService paymentService   = new PaymentService();            // ✅ no args needed
+
+    // Controllers
+    private CartController cartController;
+    private MenuController menuController;
+    private OrderController orderController;
+    private PaymentController paymentController;
+    private CheckoutController checkoutController;
 
     // Existing services (unchanged)
     private MenuService    menuService    = new MenuService();
@@ -108,8 +123,6 @@ public class CustomerLoginController {
         if (customer != null) {
             System.out.println("Welcome, " + customer.getUsername() + "!");
             customerDashboard(customer);
-        } else {
-            System.out.println("Invalid credentials. Try again.");
         }
     }
 

@@ -1,7 +1,7 @@
 package org.restaurant;
 
+import org.restaurant.config.CleverCloudDB;
 import org.restaurant.controller.login.AdminLoginController;
-import org.restaurant.controller.login.ManagerLoginController;
 import org.restaurant.controller.login.CustomerLoginController;
 import org.restaurant.controller.login.DeliveryBoyLoginController;
 
