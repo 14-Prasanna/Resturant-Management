@@ -4,23 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="abb963d7-0d15-4ca6-a561-1bb50abbd5fa" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/config/CleverCloudDB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/config/CleverCloudDB.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/AdminLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/AdminLoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/CustomerLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/CustomerLoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/ManagerLoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/login/ManagerLoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/menu/MenuController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/controller/menu/MenuController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/model/order/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/model/order/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/login/CustomerLoginRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/login/CustomerLoginRepo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/menu/MenuRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/menu/MenuRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/order/OrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/repository/order/OrderRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/login/CustomerLoginService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/login/CustomerLoginService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/menu/MenuService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/menu/MenuService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/restaurant/service/order/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/restaurant/service/order/OrderService.java" afterDir="false" />
-    </list>
+    <list default="true" id="abb963d7-0d15-4ca6-a561-1bb50abbd5fa" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -44,7 +28,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/14-Prasanna/Resturant-Management.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/14-Prasanna/Resturant-Management&quot;,
     &quot;accountId&quot;: &quot;b1f0df3a-9700-4022-9ea2-14e6c929f216&quot;
   }
 }</component>
@@ -61,34 +45,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.App.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Console-based/Resturant-Management&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.App.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "admin-module",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_directory_selection": "D:/Restaurant_Management_latest/Restaurant_Management/Resturant-Management/src/main/java/org/restaurant",
+    "last_opened_file_path": "D:/Restaurant_Management_latest/Restaurant_Management/Resturant-Management",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Restaurant_Management_latest\Restaurant_Management\Resturant-Management\src\main\java\org\restaurant" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="App" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.restaurant.App" />
@@ -138,6 +128,10 @@
       <workItem from="1774241151155" duration="21000" />
       <workItem from="1774241275426" duration="5579000" />
       <workItem from="1774277315517" duration="546000" />
+      <workItem from="1774784279065" duration="92000" />
+      <workItem from="1774885521533" duration="67000" />
+      <workItem from="1774885699599" duration="1077000" />
+      <workItem from="1774886824275" duration="5690000" />
     </task>
     <servers />
   </component>

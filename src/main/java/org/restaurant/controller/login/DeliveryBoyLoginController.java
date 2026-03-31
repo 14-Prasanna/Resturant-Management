@@ -2,18 +2,19 @@ package org.restaurant.controller.login;
 
 import org.restaurant.model.login.DeliveryBoyLogin;
 import org.restaurant.service.login.DeliveryBoyLoginService;
+import org.restaurant.service.otp.OtpService;
 import java.util.Scanner;
 
 public class DeliveryBoyLoginController {
     private Scanner scanner;
     private DeliveryBoyLoginService deliveryBoyLoginService;
+    private OtpService otpService = new OtpService();
 
     public DeliveryBoyLoginController(Scanner scanner, DeliveryBoyLoginService deliveryBoyLoginService) {
         this.scanner = scanner;
         this.deliveryBoyLoginService = deliveryBoyLoginService;
     }
 
-    // Called from App.java
     public void start() {
         while (true) {
             System.out.println("\n--- Delivery Boy Portal ---");
@@ -21,7 +22,6 @@ public class DeliveryBoyLoginController {
             System.out.println("2. Login");
             System.out.println("0. Back to Main Menu");
             System.out.print("Choice: ");
-
             int choice = scanner.nextInt();
             scanner.nextLine();
 
@@ -40,7 +40,41 @@ public class DeliveryBoyLoginController {
         String username = scanner.nextLine();
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
-        deliveryBoyLoginService.register(username, password);
+        System.out.print("Enter Phone (10 digits): ");
+        String phone = scanner.nextLine();
+
+        // OTP Verification before saving to DB
+        System.out.println("\nSending OTP to your phone...");
+        boolean otpSent = otpService.sendOtp(phone);
+
+        if (!otpSent) {
+            System.out.println("Failed to send OTP. Please try again.");
+            return;
+        }
+
+        System.out.print("Enter OTP sent to your phone: ");
+        String enteredOtp = scanner.nextLine();
+
+        boolean otpVerified = otpService.verifyOtp(phone, enteredOtp);
+
+
+        if (!otpVerified) {
+            System.out.println("Invalid OTP! Registration failed.");
+            return;
+        }
+
+        System.out.println("OTP Verified successfully!");
+
+        // Now save to DB
+        boolean registered = deliveryBoyLoginService.register(username, password, phone);
+        if (registered) {
+            DeliveryBoyLogin boy = deliveryBoyLoginService.login(username, password);
+            if (boy != null) {
+                System.out.println("Registration successful!");
+                System.out.println("Welcome, " + boy.getUsername() + "!");
+                deliveryBoyDashboard(boy);
+            }
+        }
     }
 
     private void login() {
@@ -51,7 +85,6 @@ public class DeliveryBoyLoginController {
         String password = scanner.nextLine();
 
         DeliveryBoyLogin boy = deliveryBoyLoginService.login(username, password);
-
         if (boy != null) {
             System.out.println("Welcome, " + boy.getUsername() + "!");
             deliveryBoyDashboard(boy);
@@ -68,7 +101,6 @@ public class DeliveryBoyLoginController {
             System.out.println("2. View Delivery History");
             System.out.println("0. Logout");
             System.out.print("Choice: ");
-
             int choice = scanner.nextInt();
             scanner.nextLine();
 
@@ -106,7 +138,6 @@ public class DeliveryBoyLoginController {
         }
     }
 
-    // Called by Admin & Manager
     public DeliveryBoyLoginService getDeliveryBoyLoginService() {
         return deliveryBoyLoginService;
     }

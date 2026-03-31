@@ -7,11 +7,12 @@
 
   <!-- Project Identity -->
   <groupId>org.restaurant</groupId>
-  <artifactId>ResturantConsoleApp</artifactId>
+  <artifactId>restaurant-management</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>ResturantConsoleApp</name>
+  <name>Restaurant Console App</name>
+
 
   <!-- Java Version -->
   <properties>
@@ -23,14 +24,34 @@
   <!-- Dependencies -->
   <dependencies>
 
-    <!-- MySQL JDBC Driver -->
+    <!-- MySQL JDBC Driver (FIXED) -->
     <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
       <version>8.0.33</version>
     </dependency>
 
-    <!-- JUnit (Updated) -->
+    <!-- Twilio SDK -->
+    <dependency>
+      <groupId>com.twilio.sdk</groupId>
+      <artifactId>twilio</artifactId>
+      <version>8.32.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.4</version>
+    </dependency>
+
+    <!-- .env support -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>java-dotenv</artifactId>
+      <version>5.2.2</version>
+    </dependency>
+
+    <!-- JUnit (Testing) -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -44,7 +65,7 @@
   <build>
     <plugins>
 
-      <!-- Compiler Plugin (Java 21 aligned) -->
+      <!-- Compiler Plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

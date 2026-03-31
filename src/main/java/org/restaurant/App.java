@@ -1,14 +1,14 @@
 package org.restaurant;
 
+import org.restaurant.config.CleverCloudDB;
 import org.restaurant.controller.login.AdminLoginController;
-import org.restaurant.controller.login.ManagerLoginController;
 import org.restaurant.controller.login.CustomerLoginController;
 import org.restaurant.controller.login.DeliveryBoyLoginController;
+import org.restaurant.controller.login.ManagerLoginController;
 import org.restaurant.service.cart.CartService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
 import org.restaurant.service.order.OrderService;
-import org.restaurant.config.CleverCloudDB;
 import java.util.Scanner;
 
 public class App {
@@ -16,26 +16,29 @@ public class App {
 
         CleverCloudDB.testConnection();
         CleverCloudDB.showTables();
+
         Scanner scanner = new Scanner(System.in);
 
         // Shared services
-        CustomerLoginService customerLoginService       = new CustomerLoginService();
+        CustomerLoginService customerLoginService   = new CustomerLoginService();
         DeliveryBoyLoginService deliveryBoyLoginService = new DeliveryBoyLoginService();
-        CartService cartService                         = new CartService();
-        OrderService orderService                       = new OrderService(cartService);
+        CartService cartService                     = new CartService();
+        OrderService orderService                   = new OrderService(cartService); // ✅
 
         // Controllers
-        CustomerLoginController customerLoginController
-                = new CustomerLoginController(scanner, customerLoginService);
+        CustomerLoginController customerLoginController =
+                new CustomerLoginController(scanner, customerLoginService);
 
-        DeliveryBoyLoginController deliveryBoyLoginController
-                = new DeliveryBoyLoginController(scanner, deliveryBoyLoginService);
+        DeliveryBoyLoginController deliveryBoyLoginController =
+                new DeliveryBoyLoginController(scanner, deliveryBoyLoginService);
 
-        AdminLoginController adminLoginController
-                = new AdminLoginController(scanner, customerLoginService, deliveryBoyLoginService, orderService);
+        AdminLoginController adminLoginController =
+                new AdminLoginController(scanner, customerLoginService,
+                        deliveryBoyLoginService, orderService);
 
-        ManagerLoginController managerLoginController
-                = new ManagerLoginController(scanner, customerLoginService, deliveryBoyLoginService, orderService);
+        ManagerLoginController managerLoginController =
+                new ManagerLoginController(scanner, customerLoginService,
+                        deliveryBoyLoginService, orderService);
 
         while (true) {
             System.out.println("\n=============================");

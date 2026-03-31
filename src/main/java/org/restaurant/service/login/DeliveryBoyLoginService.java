@@ -5,13 +5,29 @@ import org.restaurant.repository.login.DeliveryBoyLoginRepo;
 import java.util.Collection;
 
 public class DeliveryBoyLoginService {
-
     private DeliveryBoyLoginRepo deliveryBoyLoginRepo = new DeliveryBoyLoginRepo();
 
-    public boolean register(String username, String password) {
-        return deliveryBoyLoginRepo.register(username, password);
+    // REGISTER with phone
+    public boolean register(String username, String password, String phone) {
+
+        // Validations
+        if (username == null || username.trim().isEmpty()) {
+            System.out.println("Username cannot be empty!");
+            return false;
+        }
+        if (password == null || password.length() < 6) {
+            System.out.println("Password must be at least 6 characters!");
+            return false;
+        }
+        if (phone == null || phone.length() != 10) {
+            System.out.println("Phone must be 10 digits!");
+            return false;
+        }
+
+        return deliveryBoyLoginRepo.register(username, password, phone);
     }
 
+    // LOGIN
     public DeliveryBoyLogin login(String username, String password) {
         DeliveryBoyLogin boy = deliveryBoyLoginRepo.findByUsername(username);
         if (boy != null && boy.getPassword().equals(password)) {

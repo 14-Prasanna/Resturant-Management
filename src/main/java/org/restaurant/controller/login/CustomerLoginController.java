@@ -1,33 +1,50 @@
 package org.restaurant.controller.login;
 
 import org.restaurant.controller.cart.CartController;
+import org.restaurant.controller.checkout.CheckoutController;
 import org.restaurant.controller.menu.MenuController;
 import org.restaurant.controller.order.OrderController;
+import org.restaurant.controller.payment.PaymentController;
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.service.cart.CartService;
+import org.restaurant.service.checkout.CheckoutService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.menu.MenuService;
 import org.restaurant.service.order.OrderService;
-
+import org.restaurant.service.otp.OtpService;
+import org.restaurant.service.payment.PaymentService;
 import java.util.Scanner;
 
 public class CustomerLoginController {
 
     private Scanner scanner;
     private CustomerLoginService customerLoginService;
-    private MenuService  menuService   = new MenuService();
-    private CartService  cartService   = new CartService();
-    private OrderService orderService  = new OrderService(cartService);
-    private CartController  cartController;
-    private MenuController  menuController;
+    private OtpService otpService = new OtpService();
+
+    // Services
+    private MenuService menuService         = new MenuService();
+    private CartService cartService         = new CartService();
+    private OrderService orderService       = new OrderService(cartService);   // ✅ pass CartService
+    private CheckoutService checkoutService = new CheckoutService(cartService);
+    private PaymentService paymentService   = new PaymentService();            // ✅ no args needed
+
+    // Controllers
+    private CartController cartController;
+    private MenuController menuController;
     private OrderController orderController;
+    private PaymentController paymentController;
+    private CheckoutController checkoutController;
 
     public CustomerLoginController(Scanner scanner, CustomerLoginService customerLoginService) {
-        this.scanner              = scanner;
+        this.scanner = scanner;
         this.customerLoginService = customerLoginService;
-        this.cartController       = new CartController(scanner, cartService, menuService);
-        this.menuController       = new MenuController(scanner);
-        this.orderController      = new OrderController(scanner, orderService);
+
+        this.cartController     = new CartController(scanner, cartService, menuService);
+        this.menuController     = new MenuController(scanner);
+        this.orderController    = new OrderController(scanner, orderService);
+        this.paymentController  = new PaymentController(scanner, paymentService);
+        this.checkoutController = new CheckoutController(
+                scanner, checkoutService, cartService, orderService, paymentController);
     }
 
     public void start() {
@@ -56,10 +73,33 @@ public class CustomerLoginController {
         String username = scanner.nextLine();
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Phone (10 digits): ");
+        String phone = scanner.nextLine();
 
-        boolean registered = customerLoginService.register(username, password);
+        System.out.println("\nSending OTP to your phone...");
+        boolean otpSent = otpService.sendOtp(phone);
+
+        if (!otpSent) {
+            System.out.println("Failed to send OTP. Please try again.");
+            return;
+        }
+
+        System.out.print("Enter OTP sent to your phone: ");
+        String enteredOtp = scanner.nextLine();
+
+        boolean otpVerified = otpService.verifyOtp(phone, enteredOtp);
+
+        if (!otpVerified) {
+            System.out.println("Invalid OTP! Registration failed.");
+            return;
+        }
+
+        System.out.println("OTP Verified successfully!");
+
+        boolean registered = customerLoginService.register(username, password, email, phone);
         if (registered) {
-            // Auto-login after successful registration
             CustomerLogin customer = customerLoginService.login(username, password);
             if (customer != null) {
                 System.out.println("Welcome, " + customer.getUsername() + "!");
@@ -79,8 +119,6 @@ public class CustomerLoginController {
         if (customer != null) {
             System.out.println("Welcome, " + customer.getUsername() + "!");
             customerDashboard(customer);
-        } else {
-            System.out.println("Invalid credentials. Try again.");
         }
     }
 
@@ -93,7 +131,7 @@ public class CustomerLoginController {
             System.out.println("3. View Cart");
             System.out.println("4. Update Cart Item");
             System.out.println("5. Remove Item from Cart");
-            System.out.println("6. Place Order");
+            System.out.println("6. Checkout & Pay");
             System.out.println("7. View My Past Orders");
             System.out.println("0. Logout");
             System.out.print("Choice: ");
@@ -107,7 +145,7 @@ public class CustomerLoginController {
                 case 3 -> cartController.viewCart(customer.getUsername());
                 case 4 -> cartController.updateCartItem(customer.getUsername());
                 case 5 -> cartController.removeFromCart(customer.getUsername());
-                case 6 -> orderController.placeOrder(customer.getUsername());
+                case 6 -> checkoutController.startCheckout(customer.getUsername());
                 case 7 -> orderController.viewMyOrders(customer.getUsername());
                 case 0 -> {
                     System.out.println("Logged out. Returning to main menu...");
