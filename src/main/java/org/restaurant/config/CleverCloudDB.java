@@ -7,19 +7,20 @@ import java.sql.Statement;
 
 public class CleverCloudDB {
 
-    private static final String URL =
-            "jdbc:mysql://bxohvsqqznggomjetfir-mysql.services.clever-cloud.com:3306/bxohvsqqznggomjetfir" +
-                    "?useSSL=true" +
-                    "&requireSSL=true" +
-                    "&verifyServerCertificate=false" +
-                    "&connectTimeout=30000" +
-                    "&socketTimeout=30000" +
-                    "&autoReconnect=true";
-
-    private static final String USER     = "ubbtxt5u2yy4tvxa";
-    private static final String PASSWORD = "xG0D9YHiXIVl4ySRihXZ";
+    private static final String URL      = System.getenv("DB_URL");
+    private static final String USER     = System.getenv("DB_USER");
+    private static final String PASSWORD = System.getenv("DB_PASSWORD");
 
     public static Connection getConnection() throws Exception {
+        if (URL == null || URL.isEmpty()) {
+            throw new IllegalStateException("Database URL not configured. Please set the DB_URL environment variable.");
+        }
+        if (USER == null || USER.isEmpty()) {
+            throw new IllegalStateException("Database user not configured. Please set the DB_USER environment variable.");
+        }
+        if (PASSWORD == null || PASSWORD.isEmpty()) {
+            throw new IllegalStateException("Database password not configured. Please set the DB_PASSWORD environment variable.");
+        }
         Class.forName("com.mysql.cj.jdbc.Driver");
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
