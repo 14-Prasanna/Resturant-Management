@@ -14,9 +14,21 @@ import java.util.Scanner;
 public class App {
     public static void main(String[] args) {
 
-        CleverCloudDB.testConnection();
-        CleverCloudDB.showTables();
+        // Optional debug: only test DB connection and list tables when explicitly requested.
+        boolean debugDb = false;
+        if (args != null) {
+            for (String arg : args) {
+                if ("--debug-db".equals(arg)) {
+                    debugDb = true;
+                    break;
+                }
+            }
+        }
 
+        if (debugDb) {
+            CleverCloudDB.testConnection();
+            CleverCloudDB.showTables();
+        }
         Scanner scanner = new Scanner(System.in);
 
         // Shared services
