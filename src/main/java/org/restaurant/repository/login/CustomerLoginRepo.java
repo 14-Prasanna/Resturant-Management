@@ -7,21 +7,20 @@ import java.sql.*;
 import java.util.*;
 
 public class CustomerLoginRepo {
+    private static CustomerLoginRepo instance;
+    private Map<String, CustomerLogin> customerMap = new HashMap<>();
 
-    public boolean register(String username, String hashedPassword, String email, String phone) {
-        String sql = "INSERT INTO customer_login (username, password, email, phone) VALUES (?, ?, ?, ?)";
-        try (Connection con = CleverCloudDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    private CustomerLoginRepo() {}
 
-            ps.setString(1, username);
-            ps.setString(2, hashedPassword);
-            ps.setString(3, email);
-            ps.setString(4, phone);
-            ps.executeUpdate();
-            System.out.println("Customer Registration successful!");
-            return true;
+    public static CustomerLoginRepo getInstance() {
+        if (instance == null) {
+            instance = new CustomerLoginRepo();
+        }
+        return instance;
+    }
 
-        } catch (SQLIntegrityConstraintViolationException e) {
+    public boolean register(String username, String password) {
+        if (customerMap.containsKey(username)) {
             System.out.println("Username already taken. Try another.");
             return false;
         } catch (Exception e) {

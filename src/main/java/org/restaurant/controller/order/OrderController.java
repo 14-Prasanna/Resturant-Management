@@ -42,7 +42,7 @@ public class OrderController {
     // VIEW PAST ORDERS
     // -------------------------------------------------------------------------
 
-    /** Displays all past orders for the customer. */
+    /** Displays all past order for the customer. */
     public void viewMyOrders(String customerId) {
         List<Order> orders = orderService.getOrdersByCustomer(customerId);
 

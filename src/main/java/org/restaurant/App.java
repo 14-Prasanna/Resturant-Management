@@ -4,40 +4,33 @@ import org.restaurant.config.CleverCloudDB;
 import org.restaurant.controller.login.AdminLoginController;
 import org.restaurant.controller.login.CustomerLoginController;
 import org.restaurant.controller.login.DeliveryBoyLoginController;
-import org.restaurant.controller.login.ManagerLoginController;
+
 import org.restaurant.service.cart.CartService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
 import org.restaurant.service.order.OrderService;
+
+import org.restaurant.config.CleverCloudDB;
+
 import java.util.Scanner;
 
 public class App {
+
     public static void main(String[] args) {
 
-        // Optional debug: only test DB connection and list tables when explicitly requested.
-        boolean debugDb = false;
-        if (args != null) {
-            for (String arg : args) {
-                if ("--debug-db".equals(arg)) {
-                    debugDb = true;
-                    break;
-                }
-            }
-        }
+        // DB check
+        CleverCloudDB.testConnection();
+        CleverCloudDB.showTables();
 
-        if (debugDb) {
-            CleverCloudDB.testConnection();
-            CleverCloudDB.showTables();
-        }
         Scanner scanner = new Scanner(System.in);
 
-        // Shared services
-        CustomerLoginService customerLoginService   = new CustomerLoginService();
+        // 🔹 Shared services
+        CustomerLoginService customerLoginService = new CustomerLoginService();
         DeliveryBoyLoginService deliveryBoyLoginService = new DeliveryBoyLoginService();
-        CartService cartService                     = new CartService();
-        OrderService orderService                   = new OrderService(cartService); // ✅
+        CartService cartService = new CartService();
+        OrderService orderService = new OrderService(cartService);
 
-        // Controllers
+        // 🔹 Controllers
         CustomerLoginController customerLoginController =
                 new CustomerLoginController(scanner, customerLoginService);
 
@@ -48,10 +41,12 @@ public class App {
                 new AdminLoginController(scanner, customerLoginService,
                         deliveryBoyLoginService, orderService);
 
+        // ✅ FIXED (merged properly)
         ManagerLoginController managerLoginController =
                 new ManagerLoginController(scanner, customerLoginService,
                         deliveryBoyLoginService, orderService);
 
+        // 🔹 Main Menu Loop
         while (true) {
             System.out.println("\n=============================");
             System.out.println("  Welcome to Annauku oru uthapam Hotel  ");

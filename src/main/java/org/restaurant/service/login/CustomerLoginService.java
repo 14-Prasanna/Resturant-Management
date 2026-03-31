@@ -6,21 +6,24 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.Collection;
 
 public class CustomerLoginService {
-    private CustomerLoginRepo customerLoginRepo = new CustomerLoginRepo();
+    private CustomerLoginRepo customerLoginRepo = CustomerLoginRepo.getInstance();
 
-    public boolean register(String username, String password, String email, String phone) {
+    public boolean register(String username, String password) {
+        return customerLoginRepo.register(username, password);
+    }
 
-        if (username == null || username.trim().isEmpty()) {
-            System.out.println("Username cannot be empty!");
-            return false;
+    public CustomerLogin login(String username, String password) {
+        CustomerLogin customer = customerLoginRepo.findByUsername(username);
+        if (customer != null && customer.getPassword().equals(password)) {
+            return customer;
         }
-        if (password == null || password.length() < 6) {
-            System.out.println("Password must be at least 6 characters!");
-            return false;
-        }
-        if (email == null || !email.contains("@")) {
-            System.out.println("Invalid email address!");
-            return false;
+        return null;
+    }
+
+    public void addOrder(String username, String order) {
+        CustomerLogin customer = customerLoginRepo.findByUsername(username);
+        if (customer != null) {
+            customer.addOrder(order);
         }
         if (phone == null || phone.length() != 10) {
             System.out.println("Phone must be 10 digits!");
@@ -32,7 +35,7 @@ public class CustomerLoginService {
         return customerLoginRepo.register(username, hashedPassword, email, phone);
     }
 
-    public CustomerLogin login(String username, String password) {
+    public void addReport(String username, String report) {
         CustomerLogin customer = customerLoginRepo.findByUsername(username);
         if (customer != null && BCrypt.checkpw(password, customer.getPassword())) {
             return customer;

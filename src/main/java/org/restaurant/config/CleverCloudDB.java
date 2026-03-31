@@ -7,24 +7,19 @@ import java.sql.Statement;
 
 public class CleverCloudDB {
 
-    private static final String URL      = System.getenv("DB_URL");
-    private static final String USER     = System.getenv("DB_USER");
-    private static final String PASSWORD = System.getenv("DB_PASSWORD");
+    private static final String URL =
+            "jdbc:mysql://bxohvsqqznggomjetfir-mysql.services.clever-cloud.com:3306/bxohvsqqznggomjetfir" +
+                    "?useSSL=true&requireSSL=true&verifyServerCertificate=false";
 
+    private static final String USER = "ubbtxt5u2yy4tvxa";
+    private static final String PASSWORD = "xG0D9YHiXIVl4ySRihXZ";
+
+    // 🔌 Reusable connection
     public static Connection getConnection() throws Exception {
-        if (URL == null || URL.isEmpty()) {
-            throw new IllegalStateException("Database URL not configured. Please set the DB_URL environment variable.");
-        }
-        if (USER == null || USER.isEmpty()) {
-            throw new IllegalStateException("Database user not configured. Please set the DB_USER environment variable.");
-        }
-        if (PASSWORD == null || PASSWORD.isEmpty()) {
-            throw new IllegalStateException("Database password not configured. Please set the DB_PASSWORD environment variable.");
-        }
-        Class.forName("com.mysql.cj.jdbc.Driver");
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
+    // 🧪 Test connection
     public static void testConnection() {
         try (Connection con = getConnection()) {
             System.out.println("✅ DB Connected Successfully 🚀");
@@ -32,21 +27,26 @@ public class CleverCloudDB {
             System.out.println("❌ DB Connection Failed");
             e.printStackTrace();
         }
+
     }
 
+    // 📊 Show all tables
     public static void showTables() {
         String query = "SELECT table_name FROM information_schema.tables " +
                 "WHERE table_schema = 'bxohvsqqznggomjetfir'";
+
         try (Connection con = getConnection();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(query)) {
 
             System.out.println("📂 Tables in DB:");
+
             while (rs.next()) {
                 System.out.println("Table: " + rs.getString("table_name"));
             }
+
         } catch (Exception e) {
-            System.out.println("Could not fetch tables — check internet connection!");
+            e.printStackTrace();
         }
     }
 }

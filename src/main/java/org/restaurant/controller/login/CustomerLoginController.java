@@ -11,13 +11,21 @@ import org.restaurant.service.checkout.CheckoutService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.menu.MenuService;
 import org.restaurant.service.order.OrderService;
-import org.restaurant.service.otp.OtpService;
 import org.restaurant.service.payment.PaymentService;
+
 import java.util.Scanner;
 
+/**
+ * CustomerLoginController (updated)
+ *
+ * Changes from the original:
+ *   - Added option 6 → Checkout (new flow: Cart → Checkout → Order → Payment)
+ *   - Old option 6 "Place Order" moved to option 8 (kept for direct use)
+ *   - All new services/controllers wired in constructor
+ */
 public class CustomerLoginController {
 
-    private Scanner scanner;
+    private Scanner              scanner;
     private CustomerLoginService customerLoginService;
     private OtpService otpService = new OtpService();
 
@@ -35,16 +43,36 @@ public class CustomerLoginController {
     private PaymentController paymentController;
     private CheckoutController checkoutController;
 
+    // Existing services (unchanged)
+    private MenuService    menuService    = new MenuService();
+    private CartService    cartService    = new CartService();
+    private OrderService   orderService   = new OrderService(cartService);
+
+    // New services
+    private CheckoutService checkoutService = new CheckoutService(cartService);
+    private PaymentService  paymentService  = new PaymentService();
+
+    // Existing controllers (unchanged)
+    private CartController  cartController;
+    private MenuController  menuController;
+    private OrderController orderController;
+
+    // New controllers
+    private PaymentController  paymentController;
+    private CheckoutController checkoutController;
+
     public CustomerLoginController(Scanner scanner, CustomerLoginService customerLoginService) {
-        this.scanner = scanner;
+        this.scanner              = scanner;
         this.customerLoginService = customerLoginService;
 
-        this.cartController     = new CartController(scanner, cartService, menuService);
-        this.menuController     = new MenuController(scanner);
-        this.orderController    = new OrderController(scanner, orderService);
+        this.cartController    = new CartController(scanner, cartService, menuService);
+        this.menuController    = new MenuController(scanner);
+        this.orderController   = new OrderController(scanner, orderService);
+
+        // PaymentController must be created before CheckoutController (it is injected)
         this.paymentController  = new PaymentController(scanner, paymentService);
-        this.checkoutController = new CheckoutController(
-                scanner, checkoutService, cartService, orderService, paymentController);
+        this.checkoutController = new CheckoutController(scanner, checkoutService,
+                orderService, paymentController);
     }
 
     public void start() {
@@ -73,32 +101,8 @@ public class CustomerLoginController {
         String username = scanner.nextLine();
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
-        System.out.print("Enter Email: ");
-        String email = scanner.nextLine();
-        System.out.print("Enter Phone (10 digits): ");
-        String phone = scanner.nextLine();
 
-        System.out.println("\nSending OTP to your phone...");
-        boolean otpSent = otpService.sendOtp(phone);
-
-        if (!otpSent) {
-            System.out.println("Failed to send OTP. Please try again.");
-            return;
-        }
-
-        System.out.print("Enter OTP sent to your phone: ");
-        String enteredOtp = scanner.nextLine();
-
-        boolean otpVerified = otpService.verifyOtp(phone, enteredOtp);
-
-        if (!otpVerified) {
-            System.out.println("Invalid OTP! Registration failed.");
-            return;
-        }
-
-        System.out.println("OTP Verified successfully!");
-
-        boolean registered = customerLoginService.register(username, password, email, phone);
+        boolean registered = customerLoginService.register(username, password);
         if (registered) {
             CustomerLogin customer = customerLoginService.login(username, password);
             if (customer != null) {
