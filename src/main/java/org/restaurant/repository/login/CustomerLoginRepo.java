@@ -2,13 +2,13 @@ package org.restaurant.repository.login;
 
 import org.restaurant.config.CleverCloudDB;
 import org.restaurant.model.login.CustomerLogin;
-import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
 import java.util.*;
 
 public class CustomerLoginRepo {
+
     private static CustomerLoginRepo instance;
-    private Map<String, CustomerLogin> customerMap = new HashMap<>();
 
     private CustomerLoginRepo() {}
 
@@ -19,10 +19,31 @@ public class CustomerLoginRepo {
         return instance;
     }
 
-    public boolean register(String username, String password) {
-        if (customerMap.containsKey(username)) {
-            System.out.println("Username already taken. Try another.");
-            return false;
+    // Register with all fields stored to DB
+    public boolean register(String username, String hashedPassword, String email, String phone) {
+        String checkSql  = "SELECT username FROM customer_login WHERE username = ?";
+        String insertSql = "INSERT INTO customer_login (username, password, email, phone) VALUES (?, ?, ?, ?)";
+
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement checkPs = con.prepareStatement(checkSql)) {
+
+            checkPs.setString(1, username);
+            ResultSet rs = checkPs.executeQuery();
+            if (rs.next()) {
+                System.out.println("Username already taken. Try another.");
+                return false;
+            }
+
+            try (PreparedStatement insertPs = con.prepareStatement(insertSql)) {
+                insertPs.setString(1, username);
+                insertPs.setString(2, hashedPassword);
+                insertPs.setString(3, email);
+                insertPs.setString(4, phone);
+                insertPs.executeUpdate();
+                System.out.println("Registration successful!");
+                return true;
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
