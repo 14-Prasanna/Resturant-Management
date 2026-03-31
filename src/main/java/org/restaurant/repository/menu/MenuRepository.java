@@ -4,8 +4,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MenuRepository {
-    // Key = productId, allows same name in different meal times
+    private static MenuRepository instance;
     private Map<String, MenuItem> menu = new HashMap<>();
+
+    private MenuRepository() {}
+
+    public static MenuRepository getInstance() {
+        if (instance == null) {
+            instance = new MenuRepository();
+        }
+        return instance;
+    }
 
     public boolean addItem(MenuItem item) {
         if (menu.containsKey(item.getProductId())) return false;
@@ -17,19 +26,16 @@ public class MenuRepository {
         return menu.values();
     }
 
-    // Find item by productId
     public MenuItem getItemByProductId(String productId) {
         return menu.get(productId);
     }
 
-    // Check if same name exists in same meal time
     public boolean existsByNameAndMealTime(String name, String mealTime) {
         return menu.values().stream()
                 .anyMatch(item -> item.getName().equalsIgnoreCase(name)
                         && item.getMealTime().equalsIgnoreCase(mealTime));
     }
 
-    // Get all meal times where this name already exists
     public List<String> getMealTimesForName(String name) {
         return menu.values().stream()
                 .filter(item -> item.getName().equalsIgnoreCase(name))
@@ -37,18 +43,6 @@ public class MenuRepository {
                 .collect(Collectors.toList());
     }
 
-    public boolean updateItem(String productId, String name, String desc, double rating, double price, String mealTime) {
-        if (!menu.containsKey(productId)) return false;
-        MenuItem item = menu.get(productId);
-        item.setName(name);
-        item.setDescription(desc);
-        item.setRating(rating);
-        item.setPrice(price);
-        item.setMealTime(mealTime);
-        return true;
-    }
-
-    // Partial update - only update specific field
     public boolean updateField(String productId, String field, String value) {
         if (!menu.containsKey(productId)) return false;
         MenuItem item = menu.get(productId);

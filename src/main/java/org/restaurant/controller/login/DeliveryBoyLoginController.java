@@ -2,112 +2,116 @@ package org.restaurant.controller.login;
 
 import org.restaurant.model.login.DeliveryBoyLogin;
 import org.restaurant.service.login.DeliveryBoyLoginService;
+import java.util.Collection;
 import java.util.Scanner;
 
 public class DeliveryBoyLoginController {
+
     private Scanner scanner;
     private DeliveryBoyLoginService deliveryBoyLoginService;
+    private OtpService otpService = new OtpService();
 
-    public DeliveryBoyLoginController(Scanner scanner, DeliveryBoyLoginService deliveryBoyLoginService) {
+    public DeliveryBoyLoginController(Scanner scanner,
+                                         DeliveryBoyLoginService deliveryBoyLoginService) {
         this.scanner = scanner;
         this.deliveryBoyLoginService = deliveryBoyLoginService;
     }
 
-    // Called from App.java
     public void start() {
         while (true) {
-            System.out.println("\n--- Delivery Boy Portal ---");
-            System.out.println("1. Register");
-            System.out.println("2. Login");
-            System.out.println("0. Back to Main Menu");
+            System.out.println("\n--- Delivery Assignment Management ---");
+            System.out.println("1. View All Delivery Boys");
+            System.out.println("2. Assign Order to Delivery Boy");
+            System.out.println("3. View Assigned Orders");
+            System.out.println("4. Mark Order as Delivered");
+            System.out.println("0. Back");
             System.out.print("Choice: ");
-
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             switch (choice) {
-                case 1 -> register();
-                case 2 -> login();
+                case 1 -> viewAllDeliveryBoys();
+                case 2 -> assignOrder();
+                case 3 -> viewAssignedOrders();
+                case 4 -> markAsDelivered();
                 case 0 -> { return; }
                 default -> System.out.println("Invalid option.");
             }
         }
     }
 
-    private void register() {
-        System.out.println("\n--- Delivery Boy Register ---");
-        System.out.print("Enter Username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter Password: ");
-        String password = scanner.nextLine();
-        deliveryBoyLoginService.register(username, password);
-    }
-
-    private void login() {
-        System.out.println("\n--- Delivery Boy Login ---");
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
-
-        DeliveryBoyLogin boy = deliveryBoyLoginService.login(username, password);
-
-        if (boy != null) {
-            System.out.println("Welcome, " + boy.getUsername() + "!");
-            deliveryBoyDashboard(boy);
-        } else {
-            System.out.println("Invalid credentials. Try again.");
+    private void viewAllDeliveryBoys() {
+        Collection<DeliveryBoyLogin> boys = deliveryBoyLoginService.getAllDeliveryBoys();
+        if (boys.isEmpty()) {
+            System.out.println("No delivery boys registered yet.");
+            return;
         }
+        System.out.println("\n--- All Delivery Boys ---");
+        for (DeliveryBoyLogin boy : boys) {
+            System.out.println("---------------------------");
+            System.out.println("Username       : " + boy.getUsername());
+            System.out.println("Assigned Orders: " + 
+                (boy.getAssignedOrders().isEmpty() ? "None" : boy.getAssignedOrders()));
+            System.out.println("Status         : " + 
+                (boy.getAssignedOrders().isEmpty() ? "Available" : "Busy"));
+        }
+        System.out.println("---------------------------");
     }
 
-    private void deliveryBoyDashboard(DeliveryBoyLogin boy) {
-        while (true) {
-            System.out.println("\n--- Delivery Boy Dashboard ---");
-            System.out.println("Logged in as: " + boy.getUsername());
-            System.out.println("1. View Assigned Orders");
-            System.out.println("2. View Delivery History");
-            System.out.println("0. Logout");
-            System.out.print("Choice: ");
+    private void assignOrder() {
+        // Step 1 — show available delivery boys
+        Collection<DeliveryBoyLogin> boys = deliveryBoyLoginService.getAllDeliveryBoys();
+        if (boys.isEmpty()) {
+            System.out.println("No delivery boys available!");
+            return;
+        }
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+        System.out.println("\n--- Available Delivery Boys ---");
+        for (DeliveryBoyLogin boy : boys) {
+            if (boy.getAssignedOrders().isEmpty()) {
+                System.out.println("- " + boy.getUsername());
+            }
+        }
 
-            switch (choice) {
-                case 1 -> viewAssignedOrders(boy);
-                case 2 -> viewDeliveryHistory(boy);
-                case 0 -> {
-                    System.out.println("Logged out. Returning to main menu...");
-                    return;
+        // Step 2 — enter delivery boy username
+        System.out.print("\nEnter Delivery Boy Username: ");
+        String username = scanner.nextLine();
+
+        // Step 3 — enter order details
+        System.out.print("Enter Order Details: ");
+        String orderDetails = scanner.nextLine();
+
+        // Step 4 — assign
+        deliveryBoyLoginService.addAssignedOrder(username, orderDetails);
+        System.out.println("Order assigned to " + username + " successfully!");
+    }
+
+    private void viewAssignedOrders() {
+        Collection<DeliveryBoyLogin> boys = deliveryBoyLoginService.getAllDeliveryBoys();
+        if (boys.isEmpty()) {
+            System.out.println("No delivery boys found.");
+            return;
+        }
+        System.out.println("\n--- All Assigned Orders ---");
+        for (DeliveryBoyLogin boy : boys) {
+            if (!boy.getAssignedOrders().isEmpty()) {
+                System.out.println("Delivery Boy : " + boy.getUsername());
+                for (String order : boy.getAssignedOrders()) {
+                    System.out.println("  Order: " + order);
                 }
-                default -> System.out.println("Invalid option.");
             }
         }
     }
 
-    private void viewAssignedOrders(DeliveryBoyLogin boy) {
-        System.out.println("\n--- Assigned Orders ---");
-        if (boy.getAssignedOrders().isEmpty()) {
-            System.out.println("No assigned orders yet.");
-        } else {
-            for (String order : boy.getAssignedOrders()) {
-                System.out.println("- " + order);
-            }
-        }
-    }
+    private void markAsDelivered() {
+        System.out.print("Enter Delivery Boy Username: ");
+        String username = scanner.nextLine();
 
-    private void viewDeliveryHistory(DeliveryBoyLogin boy) {
-        System.out.println("\n--- Delivery History ---");
-        if (boy.getDeliveryHistory().isEmpty()) {
-            System.out.println("No delivery history yet.");
-        } else {
-            for (String history : boy.getDeliveryHistory()) {
-                System.out.println("- " + history);
-            }
-        }
-    }
+        System.out.print("Enter Order to mark as delivered: ");
+        String order = scanner.nextLine();
 
-    // Called by Admin & Manager
-    public DeliveryBoyLoginService getDeliveryBoyLoginService() {
-        return deliveryBoyLoginService;
+        // Move from assigned to history
+        deliveryBoyLoginService.addDeliveryHistory(username, order);
+        System.out.println("Order marked as delivered and moved to history!");
     }
 }
