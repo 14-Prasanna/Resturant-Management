@@ -1,78 +1,126 @@
 package org.restaurant.repository.cart;
 
+import org.restaurant.config.CleverCloudDB;
 import org.restaurant.model.cart.Cart;
 import org.restaurant.model.cart.Cart.CartItem;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CartRepository {
 
-    // One cart per customer — key is customerId (username)
-    private Map<String, Cart> carts = new HashMap<>();
+    // ─────────────────────────────────────────────────────────────────────────
+    // ADD ITEM  –  INSERT or increment quantity if already in cart
+    // ─────────────────────────────────────────────────────────────────────────
+    public void addItem(String username, CartItem item) {
+        String sql = """
+                INSERT INTO cart (username, product_id, name, meal_time, price, quantity)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
+                """;
 
-    /** Returns the cart for this customer, creating one if it does not exist yet. */
-    public Cart getOrCreateCart(String customerId) {
-        carts.putIfAbsent(customerId, new Cart(customerId));
-        return carts.get(customerId);
-    }
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
-    /**
-     * Adds an item to the customer's cart.
-     * If the same productId already exists, increments its quantity instead.
-     */
-    public void addItem(String customerId, CartItem newItem) {
-        Cart cart = getOrCreateCart(customerId);
+            ps.setString(1, username);
+            ps.setString(2, item.getProductId());
+            ps.setString(3, item.getName());
+            ps.setString(4, item.getMealTime());
+            ps.setDouble(5, item.getPrice());
+            ps.setInt   (6, item.getQuantity());
+            ps.executeUpdate();
 
-        Optional<CartItem> existing = cart.getItems().stream()
-                .filter(i -> i.getProductId().equals(newItem.getProductId()))
-                .findFirst();
-
-        if (existing.isPresent()) {
-            existing.get().setQuantity(existing.get().getQuantity() + newItem.getQuantity());
-        } else {
-            cart.getItems().add(newItem);
+        } catch (Exception e) {
+            System.out.println("❌ Error adding item to cart: " + e.getMessage());
         }
     }
 
-    /**
-     * Updates the quantity of an existing cart item to an exact new value.
-     * If newQuantity is 0, the item is removed automatically.
-     *
-     * @return true  — item found and updated (or removed when qty = 0)
-     *         false — productId not found in this customer's cart
-     */
-    public boolean updateItemQuantity(String customerId, String productId, int newQuantity) {
-        Cart cart = getOrCreateCart(customerId);
-
-        Optional<CartItem> existing = cart.getItems().stream()
-                .filter(i -> i.getProductId().equals(productId))
-                .findFirst();
-
-        if (existing.isEmpty()) return false;
-
+    // ─────────────────────────────────────────────────────────────────────────
+    // UPDATE QUANTITY  –  set exact quantity; removes row if qty <= 0
+    // ─────────────────────────────────────────────────────────────────────────
+    public boolean updateItemQuantity(String username, String productId, int newQuantity) {
         if (newQuantity <= 0) {
-            // treat qty = 0 as a remove
-            cart.getItems().removeIf(i -> i.getProductId().equals(productId));
-        } else {
-            existing.get().setQuantity(newQuantity);
+            return removeItem(username, productId);
         }
-        return true;
+
+        String sql = "UPDATE cart SET quantity = ? WHERE username = ? AND product_id = ?";
+
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt   (1, newQuantity);
+            ps.setString(2, username);
+            ps.setString(3, productId);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("❌ Error updating cart item: " + e.getMessage());
+            return false;
+        }
     }
 
-    /**
-     * Removes an item from the cart by productId.
-     *
-     * @return true if an item was found and removed, false otherwise.
-     */
-    public boolean removeItem(String customerId, String productId) {
-        Cart cart = getOrCreateCart(customerId);
-        return cart.getItems().removeIf(i -> i.getProductId().equals(productId));
+    // ─────────────────────────────────────────────────────────────────────────
+    // REMOVE ITEM  –  delete one row by username + product_id
+    // ─────────────────────────────────────────────────────────────────────────
+    public boolean removeItem(String username, String productId) {
+        String sql = "DELETE FROM cart WHERE username = ? AND product_id = ?";
+
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ps.setString(2, productId);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            System.out.println("❌ Error removing cart item: " + e.getMessage());
+            return false;
+        }
     }
 
-    /** Empties the customer's cart (called after order is placed). */
-    public void clearCart(String customerId) {
-        carts.put(customerId, new Cart(customerId));
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET CART  –  fetch all rows for this customer and build a Cart object
+    // ─────────────────────────────────────────────────────────────────────────
+    public Cart getCart(String username) {
+        Cart cart = new Cart(username);
+        String sql = "SELECT product_id, name, meal_time, price, quantity FROM cart WHERE username = ?";
+
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    cart.getItems().add(new CartItem(
+                            rs.getString("product_id"),
+                            rs.getString("name"),
+                            rs.getString("meal_time"),
+                            rs.getDouble("price"),
+                            rs.getInt   ("quantity")
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Error fetching cart: " + e.getMessage());
+        }
+        return cart;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CLEAR CART  –  delete all rows for this customer (called after checkout)
+    // ─────────────────────────────────────────────────────────────────────────
+    public void clearCart(String username) {
+        String sql = "DELETE FROM cart WHERE username = ?";
+
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            System.out.println("❌ Error clearing cart: " + e.getMessage());
+        }
     }
 }

@@ -11,53 +11,28 @@ import org.restaurant.service.checkout.CheckoutService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.menu.MenuService;
 import org.restaurant.service.order.OrderService;
+import org.restaurant.service.otp.OtpService;
 import org.restaurant.service.payment.PaymentService;
 
 import java.util.Scanner;
 
-/**
- * CustomerLoginController (updated)
- *
- * Changes from the original:
- *   - Added option 6 → Checkout (new flow: Cart → Checkout → Order → Payment)
- *   - Old option 6 "Place Order" moved to option 8 (kept for direct use)
- *   - All new services/controllers wired in constructor
- */
 public class CustomerLoginController {
 
     private Scanner              scanner;
     private CustomerLoginService customerLoginService;
-    private OtpService otpService = new OtpService();
+    private OtpService           otpService = new OtpService();
 
-    // Services
-    private MenuService menuService         = new MenuService();
-    private CartService cartService         = new CartService();
-    private OrderService orderService       = new OrderService(cartService);   // ✅ pass CartService
-    private CheckoutService checkoutService = new CheckoutService(cartService);
-    private PaymentService paymentService   = new PaymentService();            // ✅ no args needed
-
-    // Controllers
-    private CartController cartController;
-    private MenuController menuController;
-    private OrderController orderController;
-    private PaymentController paymentController;
-    private CheckoutController checkoutController;
-
-    // Existing services (unchanged)
-    private MenuService    menuService    = new MenuService();
-    private CartService    cartService    = new CartService();
-    private OrderService   orderService   = new OrderService(cartService);
-
-    // New services
+    // Services (declared ONCE)
+    private MenuService     menuService     = new MenuService();
+    private CartService     cartService     = new CartService();
+    private OrderService    orderService    = new OrderService(cartService);
     private CheckoutService checkoutService = new CheckoutService(cartService);
     private PaymentService  paymentService  = new PaymentService();
 
-    // Existing controllers (unchanged)
-    private CartController  cartController;
-    private MenuController  menuController;
-    private OrderController orderController;
-
-    // New controllers
+    // Controllers (declared ONCE)
+    private CartController     cartController;
+    private MenuController     menuController;
+    private OrderController    orderController;
     private PaymentController  paymentController;
     private CheckoutController checkoutController;
 
@@ -72,7 +47,7 @@ public class CustomerLoginController {
         // PaymentController must be created before CheckoutController (it is injected)
         this.paymentController  = new PaymentController(scanner, paymentService);
         this.checkoutController = new CheckoutController(scanner, checkoutService,
-                orderService, paymentController);
+                orderService, paymentController, paymentService, cartService);
     }
 
     public void start() {

@@ -1,16 +1,15 @@
 package org.restaurant;
 
+
 import org.restaurant.config.CleverCloudDB;
 import org.restaurant.controller.login.AdminLoginController;
 import org.restaurant.controller.login.CustomerLoginController;
 import org.restaurant.controller.login.DeliveryBoyLoginController;
-
+import org.restaurant.controller.login.ManagerLoginController;   // ← ADD THIS
 import org.restaurant.service.cart.CartService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
 import org.restaurant.service.order.OrderService;
-
-import org.restaurant.config.CleverCloudDB;
 
 import java.util.Scanner;
 

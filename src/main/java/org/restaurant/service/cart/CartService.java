@@ -11,17 +11,17 @@ import java.util.List;
 public class CartService {
 
     private CartRepository cartRepository = new CartRepository();
-    private MenuService menuService       = new MenuService();
+    private MenuService    menuService    = new MenuService();
 
-    /**
-     * Looks up the menu item by productId and adds it to the customer's cart.
-     *
-     * @return true if the item was found in the menu and added; false if the productId is invalid.
-     */
-    public boolean addToCart(String customerId, String productId, int quantity) {
+    // ─────────────────────────────────────────────────────────────────────────
+    // ADD TO CART
+    // Looks up the menu item by productId, then persists it to DB.
+    // If the item already exists, the repo increments quantity automatically.
+    // ─────────────────────────────────────────────────────────────────────────
+    public boolean addToCart(String username, String productId, int quantity) {
         MenuItem menuItem = menuService.getItemByProductId(productId);
         if (menuItem == null) {
-            return false;
+            return false;   // product doesn't exist in menu
         }
 
         CartItem cartItem = new CartItem(
@@ -31,43 +31,43 @@ public class CartService {
                 menuItem.getPrice(),
                 quantity
         );
-        cartRepository.addItem(customerId, cartItem);
+        cartRepository.addItem(username, cartItem);
         return true;
     }
 
-    /**
-     * Updates the quantity of an already-added cart item.
-     * Entering 0 removes the item entirely.
-     *
-     * @return true  — item found and quantity updated
-     *         false — productId not found in the customer's cart
-     */
-    public boolean updateCartItem(String customerId, String productId, int newQuantity) {
-        return cartRepository.updateItemQuantity(customerId, productId, newQuantity);
+    // ─────────────────────────────────────────────────────────────────────────
+    // UPDATE QUANTITY
+    // Setting quantity to 0 removes the item.
+    // ─────────────────────────────────────────────────────────────────────────
+    public boolean updateCartItem(String username, String productId, int newQuantity) {
+        return cartRepository.updateItemQuantity(username, productId, newQuantity);
     }
 
-    /**
-     * Removes an item from the cart.
-     *
-     * @return true if removed; false if the product was not in the cart.
-     */
-    public boolean removeFromCart(String customerId, String productId) {
-        return cartRepository.removeItem(customerId, productId);
+    // ─────────────────────────────────────────────────────────────────────────
+    // REMOVE ITEM
+    // ─────────────────────────────────────────────────────────────────────────
+    public boolean removeFromCart(String username, String productId) {
+        return cartRepository.removeItem(username, productId);
     }
 
-    /** Returns all items currently in the customer's cart. */
-    public List<CartItem> getCartItems(String customerId) {
-        Cart cart = cartRepository.getOrCreateCart(customerId);
-        return cart.getItems();
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET ITEMS  –  returns the list of cart items for display
+    // ─────────────────────────────────────────────────────────────────────────
+    public List<CartItem> getCartItems(String username) {
+        return cartRepository.getCart(username).getItems();
     }
 
-    /** Clears the cart — called by OrderService after a successful order. */
-    public void clearCart(String customerId) {
-        cartRepository.clearCart(customerId);
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET CART OBJECT  –  needed by CheckoutService / OrderService
+    // ─────────────────────────────────────────────────────────────────────────
+    public Cart getCart(String username) {
+        return cartRepository.getCart(username);
     }
 
-    /** Convenience: returns the cart object (needed by OrderService to snapshot items). */
-    public Cart getCart(String customerId) {
-        return cartRepository.getOrCreateCart(customerId);
+    // ─────────────────────────────────────────────────────────────────────────
+    // CLEAR CART  –  called after a successful order / checkout
+    // ─────────────────────────────────────────────────────────────────────────
+    public void clearCart(String username) {
+        cartRepository.clearCart(username);
     }
 }

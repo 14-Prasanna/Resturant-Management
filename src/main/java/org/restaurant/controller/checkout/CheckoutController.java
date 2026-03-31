@@ -4,116 +4,114 @@ import org.restaurant.controller.payment.PaymentController;
 import org.restaurant.model.cart.Cart.CartItem;
 import org.restaurant.model.checkout.Checkout;
 import org.restaurant.model.order.Order;
+import org.restaurant.model.payment.Payment;
+import org.restaurant.model.payment.Payment.PaymentStatus;
 import org.restaurant.service.cart.CartService;
 import org.restaurant.service.checkout.CheckoutService;
 import org.restaurant.service.order.OrderService;
+import org.restaurant.service.payment.PaymentService;
 
-import java.util.List;
 import java.util.Scanner;
 
-/**
- * CheckoutController — handles the checkout flow.
- *
- * Flow it owns:
- *   1. Call CheckoutService.prepareCheckout() to build the summary.
- *   2. Display cart items + full price breakdown to the customer.
- *   3. Ask for confirmation.
- *   4. On confirmation → call OrderService.placeOrder() (reusing existing method).
- *   5. Hand the created Order to PaymentController to complete payment.
- *
- * This controller deliberately does NOT duplicate the cart display logic
- * already in CartController. It reuses the Checkout model (which already
- * contains the calculated totals) and displays it cleanly.
- */
 public class CheckoutController {
 
-    private static final double TAX_RATE            = 0.05;
     private static final double FREE_DELIVERY_ABOVE = 500.00;
 
     private Scanner           scanner;
     private CheckoutService   checkoutService;
     private OrderService      orderService;
     private PaymentController paymentController;
+    private PaymentService    paymentService;
+    private CartService       cartService;
 
     public CheckoutController(Scanner scanner,
                               CheckoutService checkoutService,
                               OrderService orderService,
-                              PaymentController paymentController) {
+                              PaymentController paymentController,
+                              PaymentService paymentService,
+                              CartService cartService) {
         this.scanner           = scanner;
         this.checkoutService   = checkoutService;
         this.orderService      = orderService;
         this.paymentController = paymentController;
+        this.paymentService    = paymentService;
+        this.cartService       = cartService;
     }
 
     // =========================================================================
-    // CHECKOUT ENTRY POINT
+    // FULL CHECKOUT FLOW
     // =========================================================================
-
-    /**
-     * Full checkout flow: display summary → confirm → place order → pay.
-     */
     public void startCheckout(String customerId) {
 
-        // Step 1: Prepare checkout summary from cart
-        Checkout checkout = checkoutService.prepareCheckout(customerId);
+        // Step 1 — Collect delivery details
+        System.out.println("\n========================================");
+        System.out.println("         DELIVERY DETAILS               ");
+        System.out.println("========================================");
+        System.out.print("Your Name    : ");
+        String name    = scanner.nextLine().trim();
+        System.out.print("Email        : ");
+        String email   = scanner.nextLine().trim();
+        System.out.print("Address      : ");
+        String address = scanner.nextLine().trim();
 
-        if (checkout == null) {
-            System.out.println("\nYour cart is empty. Please add items before checking out.");
-            return;
-        }
+        // Step 2 — Validate + save PENDING checkout row
+        Checkout checkout = checkoutService.prepareCheckout(customerId, name, email, address);
+        if (checkout == null) return;
 
-        // Step 2: Display checkout summary
+        // Step 3 — Show full summary
         displayCheckoutSummary(checkout);
 
-        // Step 3: Ask for confirmation
+        // Step 4 — Confirm
         System.out.print("\nProceed to checkout? (yes/no): ");
-        String confirm = scanner.nextLine().trim();
-
-        if (!confirm.equalsIgnoreCase("yes")) {
-            System.out.println("Checkout cancelled. Returning to dashboard.");
+        if (!scanner.nextLine().trim().equalsIgnoreCase("yes")) {
+            System.out.println("Checkout cancelled.");
+            checkoutService.markFailed(checkout.getCheckoutId());
             return;
         }
 
-        // Step 4: Place the order — reuse existing OrderService.placeOrder()
-        String orderResult = orderService.placeOrder(customerId);
-
-        // OrderService returns "Order placed successfully" on success
-        // or an error message if the cart became empty
-        if (!orderResult.toLowerCase().contains("successfully")) {
-            System.out.println(orderResult);
+        // Step 5 — Place order (saves to orders + order_items in DB transaction)
+        String result = orderService.placeOrder(customerId, checkout.getCheckoutId());
+        if (!result.startsWith("Order placed successfully")) {
+            System.out.println(result);
+            checkoutService.markFailed(checkout.getCheckoutId());
             return;
         }
 
-        // Step 5: Retrieve the just-placed order (last order for this customer)
-        List<Order> orders = orderService.getOrdersByCustomer(customerId);
-        if (orders.isEmpty()) {
-            System.out.println("Something went wrong retrieving your order. Please contact support.");
+        String orderId = result.split("\\|")[1];
+        Order  order   = orderService.getOrderById(orderId);
+        if (order == null) {
+            System.out.println("Something went wrong. Please contact support.");
             return;
         }
 
-        // The most recently placed order is the last one in the list
-        Order placedOrder = orders.get(orders.size() - 1);
+        System.out.println("\nOrder ID   : " + order.getOrderId());
+        System.out.printf ("Order Total: ₹%.2f%n", order.getTotalAmount());
+        System.out.println("Status     : " + order.getStatus());
 
-        System.out.println("\nOrder ID   : " + placedOrder.getOrderId());
-        System.out.println("Order Total: ₹" + String.format("%.2f", placedOrder.getTotalAmount()));
-        System.out.println("Status     : " + placedOrder.getStatus());
+        // Step 6 — Payment
+        paymentController.processPayment(order, customerId);
 
-        // Step 6: Hand off to PaymentController
-        paymentController.processPayment(placedOrder, customerId);
+        // Step 7 — Mark checkout COMPLETED or FAILED, clear cart only on success
+        Payment payment = paymentService.getPaymentByOrderId(orderId);
+        if (payment != null && payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            checkoutService.markCompleted(checkout.getCheckoutId());
+            cartService.clearCart(customerId);   // ✅ clear cart ONLY after successful payment
+        } else {
+            checkoutService.markFailed(checkout.getCheckoutId());
+        }
     }
 
     // =========================================================================
-    // DISPLAY HELPERS
+    // DISPLAY
     // =========================================================================
-
-    /**
-     * Prints the checkout summary — item table + full cost breakdown.
-     * Uses data from the Checkout model (totals already calculated).
-     */
     private void displayCheckoutSummary(Checkout checkout) {
         System.out.println("\n========================================");
         System.out.println("           CHECKOUT SUMMARY             ");
         System.out.println("========================================");
+        System.out.println("Name    : " + checkout.getCustomerName());
+        System.out.println("Email   : " + checkout.getEmail());
+        System.out.println("Address : " + checkout.getAddress());
+        System.out.println();
 
         System.out.printf("%-12s %-20s %-12s %8s %5s %12s%n",
                 "Product ID", "Name", "Meal Time", "Price", "Qty", "Subtotal");
@@ -121,24 +119,20 @@ public class CheckoutController {
 
         for (CartItem item : checkout.getItems()) {
             System.out.printf("%-12s %-20s %-12s %8.2f %5d %12.2f%n",
-                    item.getProductId(),
-                    item.getName(),
-                    item.getMealTime(),
-                    item.getPrice(),
-                    item.getQuantity(),
-                    item.getTotalPrice());
+                    item.getProductId(), item.getName(), item.getMealTime(),
+                    item.getPrice(), item.getQuantity(), item.getTotalPrice());
         }
 
         System.out.println("-".repeat(75));
-        System.out.printf("%-60s ₹%10.2f%n", "Subtotal",          checkout.getSubtotal());
-        System.out.printf("%-60s ₹%10.2f%n", "Tax (GST 5%)",      checkout.getTax());
+        System.out.printf("%-60s ₹%10.2f%n", "Subtotal",     checkout.getSubtotal());
+        System.out.printf("%-60s ₹%10.2f%n", "Tax (GST 5%)", checkout.getTax());
         System.out.printf("%-60s ₹%10.2f%n",
                 checkout.getDeliveryCharge() == 0.0
-                        ? "Delivery Charge (FREE – order above ₹" + FREE_DELIVERY_ABOVE + ")"
+                        ? "Delivery (FREE – order above ₹" + FREE_DELIVERY_ABOVE + ")"
                         : "Delivery Charge",
                 checkout.getDeliveryCharge());
         System.out.println("=".repeat(75));
-        System.out.printf("%-60s ₹%10.2f%n", "GRAND TOTAL",       checkout.getGrandTotal());
+        System.out.printf("%-60s ₹%10.2f%n", "GRAND TOTAL",  checkout.getGrandTotal());
         System.out.println("=".repeat(75));
     }
 }
