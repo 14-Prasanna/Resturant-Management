@@ -2,6 +2,7 @@ package org.restaurant.service.login;
 
 import org.restaurant.model.login.DeliveryBoyLogin;
 import org.restaurant.repository.login.DeliveryBoyLoginRepo;
+import org.mindrot.jbcrypt.BCrypt;
 import java.util.Collection;
 
 public class DeliveryBoyLoginService {
@@ -24,13 +25,15 @@ public class DeliveryBoyLoginService {
             return false;
         }
 
-        return deliveryBoyLoginRepo.register(username, password, phone);
+        // Hash password before storing
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        return deliveryBoyLoginRepo.register(username, hashedPassword, phone);
     }
 
     // LOGIN
     public DeliveryBoyLogin login(String username, String password) {
         DeliveryBoyLogin boy = deliveryBoyLoginRepo.findByUsername(username);
-        if (boy != null && boy.getPassword().equals(password)) {
+        if (boy != null && BCrypt.checkpw(password, boy.getPassword())) {
             return boy;
         }
         return null;
