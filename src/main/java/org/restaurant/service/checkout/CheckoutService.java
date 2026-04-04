@@ -23,7 +23,13 @@ public class CheckoutService {
     public Checkout prepareCheckout(String customerId,
                                     String customerName,
                                     String email,
-                                    String address) {
+                                    String address,
+                                    String city,
+                                    String state,
+                                    String pincode,
+                                    String phone,
+                                    Integer discountId,
+                                    double  discountAmount) {
 
         // Input validation
         if (customerName == null || customerName.isBlank()) {
@@ -38,6 +44,10 @@ public class CheckoutService {
             System.out.println("❌ Delivery address cannot be empty.");
             return null;
         }
+        if (city == null || city.isBlank() || phone == null || phone.isBlank()) {
+            System.out.println("❌ City and Phone are required.");
+            return null;
+        }
 
         List<CartItem> cartItems = cartService.getCartItems(customerId);
         if (cartItems == null || cartItems.isEmpty()) {
@@ -46,16 +56,18 @@ public class CheckoutService {
         }
 
         String   checkoutId = "CHK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        Checkout checkout   = new Checkout(checkoutId, customerId, customerName,
-                email, address, cartItems);
+        return new Checkout(checkoutId, customerId, customerName,
+                email, address, city, state, pincode, phone, cartItems, discountId, discountAmount);
+    }
 
-        boolean saved = checkoutRepository.save(checkout);
-        if (!saved) {
+    public boolean saveCheckout(Checkout checkout) {
+        String savedId = checkoutRepository.save(checkout);
+        if (savedId == null) {
             System.out.println("❌ Could not save checkout. Please try again.");
-            return null;
+            return false;
         }
-
-        return checkout;
+        checkout.setCheckoutId(savedId);
+        return true;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

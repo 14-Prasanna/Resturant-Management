@@ -17,16 +17,15 @@ public class InventoryRepository {
 
     // ADD item
     public boolean addItem(InventoryItem item) {
-        String sql = "INSERT INTO inventory (product_id, name, description, rating, price, quantity) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO inventory (product_id, name, unit, price, quantity) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, item.getProductId());
             ps.setString(2, item.getName());
-            ps.setString(3, item.getDescription());
-            ps.setDouble(4, item.getRating());
-            ps.setDouble(5, item.getPrice());
-            ps.setInt(6, item.getQuantity());
+            ps.setString(3, item.getUnit());
+            ps.setDouble(4, item.getPrice());
+            ps.setInt(5, item.getQuantity());
             ps.executeUpdate();
             return true;
 
@@ -92,8 +91,7 @@ public class InventoryRepository {
     public boolean updateItem(String productId, String field, String value) {
         String column = switch (field) {
             case "name"        -> "name";
-            case "description" -> "description";
-            case "rating"      -> "rating";
+            case "unit"        -> "unit";
             case "price"       -> "price";
             case "quantity"    -> "quantity";
             default -> null;
@@ -134,8 +132,7 @@ public class InventoryRepository {
         return new InventoryItem(
             rs.getString("product_id"),
             rs.getString("name"),
-            rs.getString("description"),
-            rs.getDouble("rating"),
+            rs.getString("unit"),
             rs.getDouble("price"),
             rs.getInt("quantity")
         );

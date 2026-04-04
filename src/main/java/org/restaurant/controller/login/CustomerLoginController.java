@@ -13,6 +13,7 @@ import org.restaurant.service.menu.MenuService;
 import org.restaurant.service.order.OrderService;
 import org.restaurant.service.otp.OtpService;
 import org.restaurant.service.payment.PaymentService;
+import org.restaurant.service.discount.DiscountService;
 
 import java.util.Scanner;
 
@@ -28,6 +29,7 @@ public class CustomerLoginController {
     private OrderService    orderService    = new OrderService(cartService);
     private CheckoutService checkoutService = new CheckoutService(cartService);
     private PaymentService  paymentService  = new PaymentService();
+    private DiscountService discountService = new DiscountService();
 
     // Controllers (declared ONCE)
     private CartController     cartController;
@@ -47,7 +49,7 @@ public class CustomerLoginController {
         // PaymentController must be created before CheckoutController (it is injected)
         this.paymentController  = new PaymentController(scanner, paymentService);
         this.checkoutController = new CheckoutController(scanner, checkoutService,
-                orderService, paymentController, paymentService, cartService);
+                orderService, paymentController, paymentService, cartService, discountService);
     }
 
     public void start() {
@@ -74,10 +76,31 @@ public class CustomerLoginController {
         System.out.println("\n--- Customer Register ---");
         System.out.print("Enter Username: ");
         String username = scanner.nextLine();
+        System.out.print("Enter Full Name: ");
+        String fullName = scanner.nextLine();
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+        System.out.print("Enter Phone: ");
+        String phone = scanner.nextLine();
         System.out.print("Enter Password: ");
         String password = scanner.nextLine();
 
-        boolean registered = customerLoginService.register(username, password);
+        // OTP WORKFLOW WITH FALLBACK
+        System.out.println("Sending OTP to " + phone + "...");
+        boolean smsSent = otpService.sendOtp(phone);
+        
+        if (smsSent) {
+            System.out.print("Enter OTP: ");
+            String enteredOtp = scanner.nextLine();
+            if (!otpService.verifyOtp(phone, enteredOtp)) {
+                System.out.println("Invalid OTP! Registration failed.");
+                return;
+            }
+        } else {
+            System.out.println("[WARNING] Twilio SMS failed (Setup .env to fix). Bypassing OTP for testing...");
+        }
+
+        boolean registered = customerLoginService.register(username, password, fullName, email, phone);
         if (registered) {
             CustomerLogin customer = customerLoginService.login(username, password);
             if (customer != null) {
@@ -112,6 +135,7 @@ public class CustomerLoginController {
             System.out.println("5. Remove Item from Cart");
             System.out.println("6. Checkout & Pay");
             System.out.println("7. View My Past Orders");
+            System.out.println("8. Submit Feedback / Report Issue");
             System.out.println("0. Logout");
             System.out.print("Choice: ");
 
@@ -120,18 +144,34 @@ public class CustomerLoginController {
 
             switch (choice) {
                 case 1 -> menuController.displayMenu();
-                case 2 -> cartController.addToCart(customer.getUsername(), menuController.selectMealTime());
+                case 2 -> cartController.addToCart(customer.getUsername(), menuController.selectSingleMealTime());
                 case 3 -> cartController.viewCart(customer.getUsername());
                 case 4 -> cartController.updateCartItem(customer.getUsername());
                 case 5 -> cartController.removeFromCart(customer.getUsername());
                 case 6 -> checkoutController.startCheckout(customer.getUsername());
                 case 7 -> orderController.viewMyOrders(customer.getUsername());
+                case 8 -> submitFeedback(customer.getUsername());
                 case 0 -> {
                     System.out.println("Logged out. Returning to main menu...");
                     return;
                 }
                 default -> System.out.println("Invalid option.");
             }
+        }
+    }
+
+    private void submitFeedback(String username) {
+        System.out.println("\n--- Submit Feedback / Report Issue ---");
+        System.out.print("Provide an Order ID (or press Enter to skip): ");
+        String orderId = scanner.nextLine();
+        
+        System.out.print("Enter your message/feedback: ");
+        String message = scanner.nextLine();
+
+        if (customerLoginService.addFeedback(username, orderId, message)) {
+            System.out.println("Thank you for your feedback! It has been recorded.");
+        } else {
+            System.out.println("Failed to submit feedback.");
         }
     }
 }

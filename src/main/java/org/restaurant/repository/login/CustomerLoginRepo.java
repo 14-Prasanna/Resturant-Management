@@ -22,20 +22,23 @@ public class CustomerLoginRepo {
     // ─────────────────────────────────────────────
     // REGISTER – insert new customer into DB
     // ─────────────────────────────────────────────
-    public boolean register(String username, String password) {
+    public boolean register(String username, String password, String fullName, String email, String phone) {
         // First check if username already exists
         if (findByUsername(username) != null) {
             System.out.println("Username already taken. Try another.");
             return false;
         }
 
-        String sql = "INSERT INTO customer_login (username, password) VALUES (?, ?)";
+        String sql = "INSERT INTO customer_login (username, password, full_name, email, phone) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, username);
             ps.setString(2, password);
+            ps.setString(3, fullName);
+            ps.setString(4, email);
+            ps.setString(5, phone);
             ps.executeUpdate();
             System.out.println("Registration successful!");
             return true;
@@ -53,7 +56,7 @@ public class CustomerLoginRepo {
     // LOGIN – find customer by username
     // ─────────────────────────────────────────────
     public CustomerLogin findByUsername(String username) {
-        String sql = "SELECT username, password FROM customer_login WHERE username = ?";
+        String sql = "SELECT * FROM customer_login WHERE username = ?";
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -63,7 +66,9 @@ public class CustomerLoginRepo {
                 if (rs.next()) {
                     return new CustomerLogin(
                             rs.getString("username"),
-                            rs.getString("password")
+                            rs.getString("password"),
+                            rs.getString("email"),
+                            rs.getString("phone")
                     );
                 }
             }
@@ -94,5 +99,23 @@ public class CustomerLoginRepo {
             System.out.println("❌ Error fetching all customers: " + e.getMessage());
         }
         return customers;
+    }
+
+    public boolean addFeedback(String username, String orderId, String message) {
+        String sql = "INSERT INTO customer_reports (customer_id, order_id, report_message) VALUES ((SELECT id FROM customer_login WHERE username=?), ?, ?)";
+        try (Connection con = CleverCloudDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, username);
+            if (orderId == null || orderId.trim().isEmpty()) {
+                ps.setNull(2, Types.VARCHAR);
+            } else {
+                ps.setString(2, orderId);
+            }
+            ps.setString(3, message);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("❌ Error adding feedback: " + e.getMessage());
+            return false;
+        }
     }
 }

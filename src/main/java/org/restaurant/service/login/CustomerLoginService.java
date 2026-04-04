@@ -9,10 +9,10 @@ import java.util.Collection;
 public class CustomerLoginService {
     private CustomerLoginRepo customerLoginRepo = CustomerLoginRepo.getInstance();
 
-    public boolean register(String username, String password) {
+    public boolean register(String username, String password, String fullName, String email, String phone) {
         // Hash password before storing
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        return customerLoginRepo.register(username, hashedPassword);
+        return customerLoginRepo.register(username, hashedPassword, fullName, email, phone);
     }
 
     public CustomerLogin login(String username, String password) {
@@ -31,11 +31,8 @@ public class CustomerLoginService {
         }
     }
 
-    public void addReport(String username, String report) {
-        CustomerLogin customer = customerLoginRepo.findByUsername(username);
-        if (customer != null) {
-            customer.addReport(report);
-        }
+    public boolean addFeedback(String username, String orderId, String message) {
+        return customerLoginRepo.addFeedback(username, orderId, message);
     }
 
     public Collection<CustomerLogin> getAllCustomers() {

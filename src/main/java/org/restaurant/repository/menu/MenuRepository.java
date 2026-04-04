@@ -5,7 +5,6 @@ import org.restaurant.model.menu.MenuItem;
 
 import java.sql.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MenuRepository {
 
@@ -21,11 +20,21 @@ public class MenuRepository {
     }
 
     // ─────────────────────────────────────────────
+    // COMMON SELECT QUERY BASE
+    // ─────────────────────────────────────────────
+    private final String SELECT_BASE = 
+        "SELECT m.product_id, m.name, m.description, m.rating, m.price, " +
+        "GROUP_CONCAT(mt.name SEPARATOR ',') as meal_times " +
+        "FROM menu_items m " +
+        "LEFT JOIN menu_item_meal_times mmt ON m.id = mmt.menu_item_id " +
+        "LEFT JOIN meal_times mt ON mmt.meal_time_id = mt.id ";
+
+    // ─────────────────────────────────────────────
     // READ – fetch all items from DB
     // ─────────────────────────────────────────────
     public Collection<MenuItem> getAllItems() {
         List<MenuItem> items = new ArrayList<>();
-        String sql = "SELECT product_id, name, description, rating, price, meal_time FROM menu_items";
+        String sql = SELECT_BASE + "GROUP BY m.id";
 
         try (Connection con = CleverCloudDB.getConnection();
              Statement st  = con.createStatement();
@@ -49,13 +58,13 @@ public class MenuRepository {
         }
 
         List<MenuItem> items = new ArrayList<>();
-        String sql = "SELECT product_id, name, description, rating, price, meal_time "
-                + "FROM menu_items WHERE LOWER(meal_time) = LOWER(?)";
+        // Note: HAVING is used since meal_times is aggregated
+        String sql = SELECT_BASE + "GROUP BY m.id HAVING LOWER(meal_times) LIKE LOWER(?) OR meal_times IS NULL";
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, mealTime);
+            ps.setString(1, "%" + mealTime + "%");
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     items.add(mapRow(rs));
@@ -71,8 +80,7 @@ public class MenuRepository {
     // READ – get single item by product_id
     // ─────────────────────────────────────────────
     public MenuItem getItemByProductId(String productId) {
-        String sql = "SELECT product_id, name, description, rating, price, meal_time "
-                + "FROM menu_items WHERE product_id = ?";
+        String sql = SELECT_BASE + "WHERE m.product_id = ? GROUP BY m.id";
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -90,72 +98,47 @@ public class MenuRepository {
     }
 
     // ─────────────────────────────────────────────
-    // CHECK – duplicate name + mealTime combo
-    // ─────────────────────────────────────────────
-    public boolean existsByNameAndMealTime(String name, String mealTime) {
-        String sql = "SELECT COUNT(*) FROM menu_items "
-                + "WHERE LOWER(name) = LOWER(?) AND LOWER(meal_time) = LOWER(?)";
-
-        try (Connection con = CleverCloudDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, name);
-            ps.setString(2, mealTime);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("❌ Error checking duplicate: " + e.getMessage());
-        }
-        return false;
-    }
-
-    // ─────────────────────────────────────────────
-    // CHECK – get all meal times a name exists in
-    // ─────────────────────────────────────────────
-    public List<String> getMealTimesForName(String name) {
-        List<String> mealTimes = new ArrayList<>();
-        String sql = "SELECT meal_time FROM menu_items WHERE LOWER(name) = LOWER(?)";
-
-        try (Connection con = CleverCloudDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    mealTimes.add(rs.getString("meal_time"));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("❌ Error fetching meal times for name: " + e.getMessage());
-        }
-        return mealTimes;
-    }
-
-    // ─────────────────────────────────────────────
     // CREATE
     // ─────────────────────────────────────────────
-    public boolean addItem(MenuItem item) {
-        String sql = "INSERT INTO menu_items (product_id, name, description, rating, price, meal_time) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+    public boolean addItem(MenuItem item, List<Integer> mealTimeIds) {
+        String insertMenuSql = "INSERT INTO menu_items (product_id, name, description, rating, price) VALUES (?, ?, ?, ?, ?)";
+        String insertMappingSql = "INSERT INTO menu_item_meal_times (menu_item_id, meal_time_id) VALUES (?, ?)";
 
-        try (Connection con = CleverCloudDB.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = CleverCloudDB.getConnection()) {
+            con.setAutoCommit(false); // Start transaction
 
-            ps.setString(1, item.getProductId());
-            ps.setString(2, item.getName());
-            ps.setString(3, item.getDescription());
-            ps.setDouble(4, item.getRating());
-            ps.setDouble(5, item.getPrice());
-            ps.setString(6, item.getMealTime());
+            int menuId = -1;
+            try (PreparedStatement ps = con.prepareStatement(insertMenuSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, item.getProductId());
+                ps.setString(2, item.getName());
+                ps.setString(3, item.getDescription());
+                ps.setDouble(4, item.getRating());
+                ps.setDouble(5, item.getPrice());
+                ps.executeUpdate();
 
-            ps.executeUpdate();
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        menuId = rs.getInt(1);
+                    }
+                }
+            }
+
+            if (menuId != -1 && mealTimeIds != null && !mealTimeIds.isEmpty()) {
+                try (PreparedStatement ps2 = con.prepareStatement(insertMappingSql)) {
+                    for (Integer mtId : mealTimeIds) {
+                        ps2.setInt(1, menuId);
+                        ps2.setInt(2, mtId);
+                        ps2.addBatch();
+                    }
+                    ps2.executeBatch();
+                }
+            }
+
+            con.commit(); // Commit transaction
             return true;
 
         } catch (SQLIntegrityConstraintViolationException e) {
-            // product_id already exists (duplicate PK)
+            System.out.println("❌ Constraint violation: " + e.getMessage());
             return false;
         } catch (Exception e) {
             System.out.println("❌ Error adding item: " + e.getMessage());
@@ -167,13 +150,11 @@ public class MenuRepository {
     // UPDATE – update a single field
     // ─────────────────────────────────────────────
     public boolean updateField(String productId, String field, String value) {
-        // Map Java field names → DB column names
         String column = switch (field) {
             case "name"        -> "name";
             case "description" -> "description";
             case "rating"      -> "rating";
             case "price"       -> "price";
-            case "mealTime"    -> "meal_time";
             default -> null;
         };
 
@@ -193,6 +174,49 @@ public class MenuRepository {
 
         } catch (Exception e) {
             System.out.println("❌ Error updating field: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean updateMealTimes(String productId, List<Integer> mealTimeIds) {
+        String getMenuIdSql = "SELECT id FROM menu_items WHERE product_id = ?";
+        String deleteMappingSql = "DELETE FROM menu_item_meal_times WHERE menu_item_id = ?";
+        String insertMappingSql = "INSERT INTO menu_item_meal_times (menu_item_id, meal_time_id) VALUES (?, ?)";
+
+        try (Connection con = CleverCloudDB.getConnection()) {
+            con.setAutoCommit(false);
+
+            int menuId = -1;
+            try (PreparedStatement ps = con.prepareStatement(getMenuIdSql)) {
+                ps.setString(1, productId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) menuId = rs.getInt("id");
+                }
+            }
+
+            if (menuId == -1) return false;
+
+            try (PreparedStatement ps = con.prepareStatement(deleteMappingSql)) {
+                ps.setInt(1, menuId);
+                ps.executeUpdate();
+            }
+
+            if (mealTimeIds != null && !mealTimeIds.isEmpty()) {
+                try (PreparedStatement ps = con.prepareStatement(insertMappingSql)) {
+                    for (Integer mtId : mealTimeIds) {
+                        ps.setInt(1, menuId);
+                        ps.setInt(2, mtId);
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                }
+            }
+            
+            con.commit();
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("❌ Error updating meal times: " + e.getMessage());
             return false;
         }
     }
@@ -219,13 +243,19 @@ public class MenuRepository {
     // HELPER – map a ResultSet row → MenuItem
     // ─────────────────────────────────────────────
     private MenuItem mapRow(ResultSet rs) throws SQLException {
+        String mtString = rs.getString("meal_times");
+        List<String> mealTimes = new ArrayList<>();
+        if (mtString != null && !mtString.trim().isEmpty()) {
+            mealTimes.addAll(Arrays.asList(mtString.split(",")));
+        }
+
         return new MenuItem(
                 rs.getString("product_id"),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getDouble("rating"),
                 rs.getDouble("price"),
-                rs.getString("meal_time")
+                mealTimes
         );
     }
 }

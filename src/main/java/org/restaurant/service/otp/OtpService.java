@@ -17,7 +17,10 @@ public class OtpService {
 
     private static final String ACCOUNT_SID = dotenv.get("TWILIO_ACCOUNT_SID");
     private static final String AUTH_TOKEN  = dotenv.get("TWILIO_AUTH_TOKEN");
-    private static final String FROM_NUMBER = dotenv.get("TWILIO_PHONE_NUMBER");
+    // Support either TWILIO_FROM_NUMBER or TWILIO_PHONE_NUMBER
+    private static final String FROM_NUMBER = dotenv.get("TWILIO_FROM_NUMBER") != null ? 
+                                              dotenv.get("TWILIO_FROM_NUMBER") : 
+                                              dotenv.get("TWILIO_PHONE_NUMBER");
 
 
     private final Map<String, String> otpMap = new HashMap<>();

@@ -27,7 +27,7 @@ public class CartService {
         CartItem cartItem = new CartItem(
                 menuItem.getProductId(),
                 menuItem.getName(),
-                menuItem.getMealTime(),
+                String.join(", ", menuItem.getMealTimes()),
                 menuItem.getPrice(),
                 quantity
         );
