@@ -12,7 +12,7 @@ import java.util.Random;
 
 public class OtpService {
 
-    private static final Dotenv dotenv = Dotenv.load();
+   // private static final Dotenv dotenv = Dotenv.load();
 
 
     
