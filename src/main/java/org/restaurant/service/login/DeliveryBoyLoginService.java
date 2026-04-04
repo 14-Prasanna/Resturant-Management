@@ -40,16 +40,19 @@ public class DeliveryBoyLoginService {
     }
 
     public void addAssignedOrder(String username, String order) {
-        DeliveryBoyLogin boy = deliveryBoyLoginRepo.findByUsername(username);
-        if (boy != null) boy.addAssignedOrder(order);
+        deliveryBoyLoginRepo.assignOrder(username, order);
     }
 
-    public void addDeliveryHistory(String username, String history) {
-        DeliveryBoyLogin boy = deliveryBoyLoginRepo.findByUsername(username);
-        if (boy != null) boy.addDeliveryHistory(history);
+    public boolean updateAssignmentStatus(String username, String orderId, String newStatus) {
+        return deliveryBoyLoginRepo.updateAssignmentStatus(username, orderId, newStatus);
+    }
+
+    public void addDeliveryHistory(String username, String orderId) {
+        // markAsDelivered handles updating delivery_assignments AND inserting into delivery_history
+        deliveryBoyLoginRepo.markAsDelivered(username, orderId);
     }
 
     public Collection<DeliveryBoyLogin> getAllDeliveryBoys() {
         return deliveryBoyLoginRepo.getAllDeliveryBoys();
     }
-}
+}

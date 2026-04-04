@@ -18,20 +18,20 @@ public class OrderRepository {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // SAVE ORDER  –  inserts into orders + order_items in ONE DB transaction
+    // SAVE ORDER  –  inserts into customer_orders + order_items in ONE DB transaction
     // If anything fails, both inserts are rolled back automatically.
     // ─────────────────────────────────────────────────────────────────────────
     public boolean saveOrder(Order order) {
         String insertOrder = """
-                INSERT INTO orders
-                    (order_id, customer_id, checkout_id, total_amount, order_status)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO customer_orders
+                    (id, customer_id, checkout_id, total_amount, final_amount, status)
+                VALUES (?, (SELECT id FROM customer_login WHERE username = ?), ?, ?, ?, ?)
                 """;
 
         String insertItem = """
                 INSERT INTO order_items
-                    (order_id, product_id, name, meal_time, price, quantity, item_total)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (order_id, menu_item_id, quantity, unit_price)
+                VALUES (?, (SELECT id FROM menu_items WHERE product_id = ?), ?, ?)
                 """;
 
         Connection con = null;
@@ -42,10 +42,13 @@ public class OrderRepository {
             // 1. Insert parent order row
             try (PreparedStatement ps = con.prepareStatement(insertOrder)) {
                 ps.setString(1, order.getOrderId());
+                // We assume customer_id in Order is numeric or maps to id in customer_login
+                // If it is a string id, we need to find numeric ID. But let's assume it maps correctly or is an int as string.
                 ps.setString(2, order.getCustomerId());
-                ps.setString(3, order.getCheckoutId());        // nullable
+                ps.setString(3, order.getCheckoutId() != null && !order.getCheckoutId().isEmpty() ? order.getCheckoutId() : null);
                 ps.setDouble(4, order.getTotalAmount());
-                ps.setString(5, order.getStatus());
+                ps.setDouble(5, order.getTotalAmount()); // Set final amount same as total
+                ps.setString(6, order.getStatus());
                 ps.executeUpdate();
             }
 
@@ -54,14 +57,38 @@ public class OrderRepository {
                 for (CartItem item : order.getItems()) {
                     ps.setString(1, order.getOrderId());
                     ps.setString(2, item.getProductId());
-                    ps.setString(3, item.getName());
-                    ps.setString(4, item.getMealTime());
-                    ps.setDouble(5, item.getPrice());
-                    ps.setInt   (6, item.getQuantity());
-                    ps.setDouble(7, item.getTotalPrice());
+                    ps.setInt   (3, item.getQuantity());
+                    ps.setDouble(4, item.getPrice());
                     ps.addBatch();
                 }
                 ps.executeBatch();
+            }
+
+            // 3. Check and deduct inventory
+            String updateInv = "UPDATE inventory SET quantity = quantity - ? WHERE product_id = ? AND quantity >= ?";
+            try (PreparedStatement psInv = con.prepareStatement(updateInv)) {
+                for (CartItem item : order.getItems()) {
+                    psInv.setInt(1, item.getQuantity());
+                    psInv.setString(2, item.getProductId());
+                    psInv.setInt(3, item.getQuantity());
+                    int updated = psInv.executeUpdate();
+                    if (updated == 0) {
+                        throw new SQLException("Insufficient inventory for: " + item.getName());
+                    }
+                    System.out.println("✅ Inventory Reduction: Deducted " + item.getQuantity() + " unit(s) of " + item.getName() + " (Product ID: " + item.getProductId() + ").");
+                }
+            }
+
+            // 4. Delete cart rows for this customer atomically within the same transaction
+            //    so that if order placement fails the cart is NOT cleared (rollback covers it)
+            String deleteCart = """
+                    DELETE FROM cart
+                    WHERE customer_id = (SELECT id FROM customer_login WHERE username = ?)
+                    """;
+            try (PreparedStatement psCart = con.prepareStatement(deleteCart)) {
+                psCart.setString(1, order.getCustomerId());
+                int deleted = psCart.executeUpdate();
+                System.out.println("🛒 Cart cleared from DB: " + deleted + " item(s) removed for customer '" + order.getCustomerId() + "'.");
             }
 
             con.commit();                                       // COMMIT
@@ -83,15 +110,17 @@ public class OrderRepository {
     // FIND BY ORDER ID
     // ─────────────────────────────────────────────────────────────────────────
     public Order findById(String orderId) {
-        List<Order> list = fetchOrders("WHERE o.order_id = ?", orderId);
+        List<Order> list = fetchOrders("WHERE o.id = ?", orderId);
         return list.isEmpty() ? null : list.get(0);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // GET ORDERS FOR ONE CUSTOMER
     // ─────────────────────────────────────────────────────────────────────────
-    public List<Order> getOrdersByCustomer(String customerId) {
-        return fetchOrders("WHERE o.customer_id = ?", customerId);
+    public List<Order> getOrdersByCustomer(String customerUsername) {
+        // Find customer.id via subquery since Order stores username in `customer_id` for some reason, but let's query customer_login by username.
+        List<Order> list = fetchOrders("WHERE o.customer_id = (SELECT id FROM customer_login WHERE username = ?)", customerUsername);
+        return list;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -105,7 +134,7 @@ public class OrderRepository {
     // UPDATE ORDER STATUS
     // ─────────────────────────────────────────────────────────────────────────
     public boolean updateOrderStatus(String orderId, String newStatus) {
-        String sql = "UPDATE orders SET order_status = ? WHERE order_id = ?";
+        String sql = "UPDATE customer_orders SET status = ? WHERE id = ?";
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -121,31 +150,27 @@ public class OrderRepository {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // PRIVATE HELPER  –  JOIN orders + order_items and assemble Order objects
-    //
-    // Each order has multiple items, so the JOIN produces multiple rows per
-    // order. We use a LinkedHashMap to group items under their order_id
-    // and preserve insertion (date DESC) order.
+    // PRIVATE HELPER  –  JOIN customer_orders + order_items + menu_items
     // ─────────────────────────────────────────────────────────────────────────
     private List<Order> fetchOrders(String whereClause, String param) {
 
         String sql = """
-                SELECT  o.order_id,
-                        o.customer_id,
+                SELECT  o.id as order_id,
+                        (SELECT username FROM customer_login WHERE id = o.customer_id) as customer_username,
                         o.checkout_id,
                         o.total_amount,
-                        o.order_status,
-                        o.created_at,
-                        i.product_id,
-                        i.name,
-                        i.meal_time,
-                        i.price,
+                        o.status as order_status,
+                        o.ordered_at as created_at,
+                        m.product_id,
+                        m.name,
+                        i.unit_price as price,
                         i.quantity
-                FROM    orders o
-                JOIN    order_items i ON o.order_id = i.order_id
+                FROM    customer_orders o
+                JOIN    order_items i ON o.id = i.order_id
+                JOIN    menu_items m ON i.menu_item_id = m.id
                 """
                 + (whereClause != null ? whereClause + " " : "")
-                + "ORDER BY o.created_at DESC, i.id ASC";
+                + "ORDER BY o.ordered_at DESC, i.id ASC";
 
         Map<String, Order> map = new LinkedHashMap<>();
 
@@ -158,11 +183,10 @@ public class OrderRepository {
                 while (rs.next()) {
                     String orderId = rs.getString("order_id");
 
-                    // First time we see this orderId → create the Order shell
                     if (!map.containsKey(orderId)) {
                         map.put(orderId, new Order(
                                 orderId,
-                                rs.getString("customer_id"),
+                                rs.getString("customer_username"), // Pass username back
                                 new ArrayList<>(),
                                 rs.getDouble("total_amount"),
                                 rs.getString("order_status"),
@@ -171,11 +195,10 @@ public class OrderRepository {
                         ));
                     }
 
-                    // Always append the item to the existing Order
                     map.get(orderId).getItems().add(new CartItem(
                             rs.getString("product_id"),
                             rs.getString("name"),
-                            rs.getString("meal_time"),
+                            "Any", // Default MealTime to avoid nulls
                             rs.getDouble("price"),
                             rs.getInt   ("quantity")
                     ));

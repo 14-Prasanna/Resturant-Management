@@ -15,8 +15,12 @@ public class CartRepository {
     // ─────────────────────────────────────────────────────────────────────────
     public void addItem(String username, CartItem item) {
         String sql = """
-                INSERT INTO cart (username, product_id, name, meal_time, price, quantity)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO cart (customer_id, menu_item_id, quantity)
+                VALUES (
+                    (SELECT id FROM customer_login WHERE username = ?),
+                    (SELECT id FROM menu_items WHERE product_id = ?),
+                    ?
+                )
                 ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
                 """;
 
@@ -25,10 +29,7 @@ public class CartRepository {
 
             ps.setString(1, username);
             ps.setString(2, item.getProductId());
-            ps.setString(3, item.getName());
-            ps.setString(4, item.getMealTime());
-            ps.setDouble(5, item.getPrice());
-            ps.setInt   (6, item.getQuantity());
+            ps.setInt   (3, item.getQuantity());
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -44,7 +45,11 @@ public class CartRepository {
             return removeItem(username, productId);
         }
 
-        String sql = "UPDATE cart SET quantity = ? WHERE username = ? AND product_id = ?";
+        String sql = """
+                UPDATE cart SET quantity = ? 
+                WHERE customer_id = (SELECT id FROM customer_login WHERE username = ?)
+                  AND menu_item_id = (SELECT id FROM menu_items WHERE product_id = ?)
+                """;
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -64,7 +69,11 @@ public class CartRepository {
     // REMOVE ITEM  –  delete one row by username + product_id
     // ─────────────────────────────────────────────────────────────────────────
     public boolean removeItem(String username, String productId) {
-        String sql = "DELETE FROM cart WHERE username = ? AND product_id = ?";
+        String sql = """
+                DELETE FROM cart 
+                WHERE customer_id = (SELECT id FROM customer_login WHERE username = ?)
+                  AND menu_item_id = (SELECT id FROM menu_items WHERE product_id = ?)
+                """;
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -84,7 +93,13 @@ public class CartRepository {
     // ─────────────────────────────────────────────────────────────────────────
     public Cart getCart(String username) {
         Cart cart = new Cart(username);
-        String sql = "SELECT product_id, name, meal_time, price, quantity FROM cart WHERE username = ?";
+        String sql = """
+                SELECT m.product_id, m.name, 'Any' as meal_time, m.price, c.quantity
+                FROM cart c
+                JOIN menu_items m ON c.menu_item_id = m.id
+                JOIN customer_login cl ON c.customer_id = cl.id
+                WHERE cl.username = ?
+                """;
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -111,7 +126,7 @@ public class CartRepository {
     // CLEAR CART  –  delete all rows for this customer (called after checkout)
     // ─────────────────────────────────────────────────────────────────────────
     public void clearCart(String username) {
-        String sql = "DELETE FROM cart WHERE username = ?";
+        String sql = "DELETE FROM cart WHERE customer_id = (SELECT id FROM customer_login WHERE username = ?)";
 
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {

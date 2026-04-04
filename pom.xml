@@ -30,26 +30,12 @@
       <version>8.0.33</version>
     </dependency>
 
-    <!-- BCrypt for password hashing -->
     <dependency>
       <groupId>org.mindrot</groupId>
       <artifactId>jbcrypt</artifactId>
       <version>0.4</version>
     </dependency>
 
-    <!-- Dotenv for .env file loading -->
-    <dependency>
-      <groupId>io.github.cdimascio</groupId>
-      <artifactId>dotenv-java</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-
-    <!-- Twilio for OTP SMS -->
-    <dependency>
-      <groupId>com.twilio.sdk</groupId>
-      <artifactId>twilio</artifactId>
-      <version>9.14.0</version>
-    </dependency>
 
     <!-- JUnit -->
     <dependency>

@@ -49,7 +49,7 @@ public class InventoryController {
                     + item.getName()
                     + " | ₹" + item.getPrice()
                     + " | Qty: " + item.getQuantity()
-                    + " | Rating: " + item.getRating());
+                    + " | Unit: " + item.getUnit());
         }
     }
 
@@ -59,17 +59,15 @@ public class InventoryController {
         String productId = scanner.nextLine();
         System.out.print("Enter Name: ");
         String name = scanner.nextLine();
-        System.out.print("Enter Description: ");
-        String desc = scanner.nextLine();
-        System.out.print("Enter Rating: ");
-        double rating = scanner.nextDouble();
+        System.out.print("Enter Unit (e.g., kg, pcs): ");
+        String unit = scanner.nextLine();
         System.out.print("Enter Price: ₹");
         double price = scanner.nextDouble();
         System.out.print("Enter Quantity: ");
         int quantity = scanner.nextInt();
         scanner.nextLine();
 
-        boolean added = inventoryService.addInventoryItem(productId, name, desc, rating, price, quantity);
+        boolean added = inventoryService.addInventoryItem(productId, name, unit, price, quantity);
         System.out.println(added ? "Item added to inventory!" : "Failed to add item!");
     }
 
@@ -87,7 +85,7 @@ public class InventoryController {
                 + " | ₹" + item.getPrice()
                 + " | Qty: " + item.getQuantity());
 
-        System.out.println("1. Name  2. Price  3. Quantity  4. Description");
+        System.out.println("1. Name  2. Price  3. Quantity  4. Unit");
         System.out.print("Choice: ");
         int choice = scanner.nextInt();
         scanner.nextLine();
@@ -96,7 +94,7 @@ public class InventoryController {
             case 1 -> { System.out.print("New name: "); inventoryService.updateItem(productId, "name", scanner.nextLine()); }
             case 2 -> { System.out.print("New price: ₹"); inventoryService.updateItem(productId, "price", scanner.nextLine()); }
             case 3 -> { System.out.print("New quantity: "); inventoryService.updateItem(productId, "quantity", scanner.nextLine()); }
-            case 4 -> { System.out.print("New description: "); inventoryService.updateItem(productId, "description", scanner.nextLine()); }
+            case 4 -> { System.out.print("New unit: "); inventoryService.updateItem(productId, "unit", scanner.nextLine()); }
             default -> System.out.println("Invalid choice");
         }
         System.out.println("Updated successfully!");

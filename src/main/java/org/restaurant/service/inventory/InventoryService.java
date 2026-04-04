@@ -8,8 +8,7 @@ public class InventoryService {
     private InventoryRepository repo = InventoryRepository.getInstance();
 
     public boolean addInventoryItem(String productId, String name,
-                                    String desc, double rating,
-                                    double price, int quantity) {
+                                    String unit, double price, int quantity) {
         // Validations
         if (productId == null || productId.trim().isEmpty()) {
             System.out.println("Product ID cannot be empty!");
@@ -28,7 +27,7 @@ public class InventoryService {
             return false;
         }
 
-        return repo.addItem(new InventoryItem(productId, name, desc, rating, price, quantity));
+        return repo.addItem(new InventoryItem(productId, name, unit, price, quantity));
     }
 
     public Collection<InventoryItem> getAllInventoryItems() {
