@@ -15,9 +15,31 @@ public class OtpService {
     private static final Dotenv dotenv = Dotenv.load();
 
 
-    private static final String ACCOUNT_SID = dotenv.get("TWILIO_ACCOUNT_SID");
-    private static final String AUTH_TOKEN  = dotenv.get("TWILIO_AUTH_TOKEN");
-    private static final String FROM_NUMBER = dotenv.get("TWILIO_PHONE_NUMBER");
+    
+        // for local running 
+  //  private static final String ACCOUNT_SID = dotenv.get("TWILIO_ACCOUNT_SID");
+  //  private static final String AUTH_TOKEN  = dotenv.get("TWILIO_AUTH_TOKEN");
+  //  private static final String FROM_NUMBER = dotenv.get("TWILIO_PHONE_NUMBER");
+
+
+    // Github env file to run in local comment this line and uncommnet the above line and run it...
+    private static final Dotenv dotenv = Dotenv.configure()
+        .ignoreIfMissing()
+        .load();
+
+    private static final String ACCOUNT_SID = System.getenv("TWILIO_ACCOUNT_SID") != null
+            ? System.getenv("TWILIO_ACCOUNT_SID")
+            : dotenv.get("TWILIO_ACCOUNT_SID");
+
+    private static final String AUTH_TOKEN = System.getenv("TWILIO_AUTH_TOKEN") != null
+            ? System.getenv("TWILIO_AUTH_TOKEN")
+            : dotenv.get("TWILIO_AUTH_TOKEN");
+
+    private static final String FROM_NUMBER = System.getenv("TWILIO_PHONE_NUMBER") != null
+            ? System.getenv("TWILIO_PHONE_NUMBER")
+            : dotenv.get("TWILIO_PHONE_NUMBER");
+
+    
 
 
     private final Map<String, String> otpMap = new HashMap<>();
