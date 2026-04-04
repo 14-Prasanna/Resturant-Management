@@ -7,6 +7,7 @@ import org.restaurant.repository.login.CustomerLoginRepo;
 import java.util.Collection;
 
 public class CustomerLoginService {
+
     private CustomerLoginRepo customerLoginRepo = CustomerLoginRepo.getInstance();
 
     public boolean register(String username, String password, String fullName, String email, String phone) {
@@ -15,6 +16,7 @@ public class CustomerLoginService {
         return customerLoginRepo.register(username, hashedPassword, fullName, email, phone);
     }
 
+    // Login with BCrypt check
     public CustomerLogin login(String username, String password) {
         CustomerLogin customer = customerLoginRepo.findByUsername(username);
         if (customer != null && BCrypt.checkpw(password, customer.getPassword())) {
