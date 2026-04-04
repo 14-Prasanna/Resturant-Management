@@ -28,4 +28,4 @@ jobs:
         run: mvn -B clean package --file pom.xml
 
       - name: Run Console Application
-        run: java -jar target/restaurant-management-1.0-SNAPSHOT.jar
+        run: mvn exec:java -Dexec.mainClass="org.restaurant.Main"
