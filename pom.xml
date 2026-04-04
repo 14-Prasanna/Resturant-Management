@@ -59,12 +59,19 @@
       <scope>test</scope>
     </dependency>
 
+         
+
   </dependencies>
 
   <!-- Build Plugins -->
   <build>
     <plugins>
 
+             <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                  <version>3.3.0</version>
+         </plugin>
       <!-- Compiler Plugin (Java 21) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
