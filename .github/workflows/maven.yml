@@ -27,4 +27,8 @@ jobs:
         run: mvn -B clean package --file pom.xml
 
       - name: Run Console Application
+        env:  
+              TWILIO_SID: ${{ secrets.TWILIO_SID }}
+              TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+              TWILIO_PHONE: ${{ secrets.TWILIO_PHONE }}
         run: mvn exec:java -Dexec.mainClass="org.restaurant.App"
