@@ -13,7 +13,7 @@ public class OrderController {
     private OrderService orderService;
 
     public OrderController(Scanner scanner, OrderService orderService) {
-        this.scanner      = scanner;
+        this.scanner  = scanner;
         this.orderService = orderService;
     }
 
