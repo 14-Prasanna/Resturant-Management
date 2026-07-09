@@ -1,19 +1,24 @@
 package org.restaurant.repository.order;
 
 import org.restaurant.model.order.Order;
+
 import java.util.*;
 
 public class OrderRepository {
 
     private static OrderRepository instance;
+
     private Map<String, Order> orders = new HashMap<>();
 
-    private OrderRepository() {}
+    private OrderRepository() {
+    }
 
     public static OrderRepository getInstance() {
+
         if (instance == null) {
             instance = new OrderRepository();
         }
+
         return instance;
     }
 
@@ -21,13 +26,33 @@ public class OrderRepository {
         orders.put(order.getOrderId(), order);
     }
 
+    public Order findById(String orderId) {
+        return orders.get(orderId);
+    }
+
+    public boolean updateOrderStatus(String orderId, String status) {
+
+        Order order = orders.get(orderId);
+
+        if (order != null) {
+            order.setStatus(status);
+            return true;
+        }
+
+        return false;
+    }
+
     public List<Order> getOrdersByCustomer(String customerId) {
+
         List<Order> result = new ArrayList<>();
+
         for (Order order : orders.values()) {
+
             if (order.getCustomerId().equals(customerId)) {
                 result.add(order);
             }
         }
+
         return result;
     }
 

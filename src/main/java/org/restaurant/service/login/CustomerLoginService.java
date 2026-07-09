@@ -1,49 +1,71 @@
 package org.restaurant.service.login;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.restaurant.model.login.CustomerLogin;
 import org.restaurant.repository.login.CustomerLoginRepo;
-import org.mindrot.jbcrypt.BCrypt;
+
 import java.util.Collection;
 
 public class CustomerLoginService {
-    private CustomerLoginRepo customerLoginRepo = CustomerLoginRepo.getInstance();
 
-    public boolean register(String username, String password) {
-        return customerLoginRepo.register(username, password);
-    }
+    private CustomerLoginRepo customerLoginRepo =
+            CustomerLoginRepo.getInstance();
 
-    public CustomerLogin login(String username, String password) {
-        CustomerLogin customer = customerLoginRepo.findByUsername(username);
-        if (customer != null && customer.getPassword().equals(password)) {
-            return customer;
-        }
-        return null;
-    }
+    // REGISTER
+    public boolean register(String username,
+                            String password,
+                            String email,
+                            String phone) {
 
-    public void addOrder(String username, String order) {
-        CustomerLogin customer = customerLoginRepo.findByUsername(username);
-        if (customer != null) {
-            customer.addOrder(order);
-        }
-        if (phone == null || phone.length() != 10) {
-            System.out.println("Phone must be 10 digits!");
+        if (username == null || username.trim().isEmpty()) {
+            System.out.println("Username cannot be empty!");
             return false;
         }
 
-        // Hash password before storing
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        return customerLoginRepo.register(username, hashedPassword, email, phone);
+        if (password == null || password.length() < 6) {
+            System.out.println("Password must be at least 6 characters!");
+            return false;
+        }
+
+        if (email == null || email.trim().isEmpty()) {
+            System.out.println("Email cannot be empty!");
+            return false;
+        }
+
+        if (phone == null || phone.length() != 10) {
+            System.out.println("Phone number must be 10 digits!");
+            return false;
+        }
+
+        String hashedPassword =
+                BCrypt.hashpw(password, BCrypt.gensalt());
+
+        return customerLoginRepo.register(
+                username,
+                hashedPassword,
+                email,
+                phone
+        );
     }
 
-    public void addReport(String username, String report) {
-        CustomerLogin customer = customerLoginRepo.findByUsername(username);
-        if (customer != null && BCrypt.checkpw(password, customer.getPassword())) {
+    // LOGIN
+    public CustomerLogin login(String username,
+                               String password) {
+
+        CustomerLogin customer =
+                customerLoginRepo.findByUsername(username);
+
+        if (customer != null &&
+                BCrypt.checkpw(password,
+                        customer.getPassword())) {
+
             return customer;
         }
-        System.out.println("Invalid credentials. Try again.");
+
         return null;
     }
 
+    // GET ALL CUSTOMERS
     public Collection<CustomerLogin> getAllCustomers() {
         return customerLoginRepo.getAllCustomers();
     }

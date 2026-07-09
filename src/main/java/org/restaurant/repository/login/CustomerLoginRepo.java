@@ -2,15 +2,16 @@ package org.restaurant.repository.login;
 
 import org.restaurant.config.CleverCloudDB;
 import org.restaurant.model.login.CustomerLogin;
-import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.*;
 import java.util.*;
 
 public class CustomerLoginRepo {
-    private static CustomerLoginRepo instance;
-    private Map<String, CustomerLogin> customerMap = new HashMap<>();
 
-    private CustomerLoginRepo() {}
+    private static CustomerLoginRepo instance;
+
+    private CustomerLoginRepo() {
+    }
 
     public static CustomerLoginRepo getInstance() {
         if (instance == null) {
@@ -19,10 +20,34 @@ public class CustomerLoginRepo {
         return instance;
     }
 
-    public boolean register(String username, String password) {
-        if (customerMap.containsKey(username)) {
-            System.out.println("Username already taken. Try another.");
-            return false;
+    public boolean register(String username, String password, String email, String phone) {
+
+        String checkSql = "SELECT * FROM customer_login WHERE username = ?";
+        String insertSql = "INSERT INTO customer_login(username, password, email, phone) VALUES(?, ?, ?, ?)";
+
+        try (Connection con = CleverCloudDB.getConnection()) {
+
+            PreparedStatement checkPs = con.prepareStatement(checkSql);
+            checkPs.setString(1, username);
+
+            ResultSet rs = checkPs.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("Username already taken. Try another.");
+                return false;
+            }
+
+            PreparedStatement insertPs = con.prepareStatement(insertSql);
+
+            insertPs.setString(1, username);
+            insertPs.setString(2, password);
+            insertPs.setString(3, email);
+            insertPs.setString(4, phone);
+
+            int rows = insertPs.executeUpdate();
+
+            return rows > 0;
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -30,13 +55,18 @@ public class CustomerLoginRepo {
     }
 
     public CustomerLogin findByUsername(String username) {
+
         String sql = "SELECT * FROM customer_login WHERE username = ?";
+
         try (Connection con = CleverCloudDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, username);
+
             ResultSet rs = ps.executeQuery();
+
             if (rs.next()) {
+
                 return new CustomerLogin(
                         rs.getString("username"),
                         rs.getString("password"),
@@ -44,20 +74,26 @@ public class CustomerLoginRepo {
                         rs.getString("phone")
                 );
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
     public Collection<CustomerLogin> getAllCustomers() {
+
         List<CustomerLogin> list = new ArrayList<>();
+
         String sql = "SELECT * FROM customer_login";
+
         try (Connection con = CleverCloudDB.getConnection();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
+
                 list.add(new CustomerLogin(
                         rs.getString("username"),
                         rs.getString("password"),
@@ -65,9 +101,11 @@ public class CustomerLoginRepo {
                         rs.getString("phone")
                 ));
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return list;
     }
 }

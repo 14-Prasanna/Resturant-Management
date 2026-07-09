@@ -5,6 +5,7 @@ import org.restaurant.controller.login.AdminLoginController;
 import org.restaurant.controller.login.CustomerLoginController;
 import org.restaurant.controller.login.DeliveryBoyLoginController;
 
+import org.restaurant.controller.login.ManagerLoginController;
 import org.restaurant.service.cart.CartService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
