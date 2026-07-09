@@ -1,11 +1,15 @@
 package org.restaurant.controller.menu;
+
 import org.restaurant.service.menu.MenuService;
+import org.restaurant.service.inventory.InventoryService;
+import org.restaurant.model.inventory.InventoryItem;
 import org.restaurant.model.menu.MenuItem;
 import java.util.*;
 
 public class MenuController {
     private Scanner scanner;
     private MenuService service = new MenuService();
+    private InventoryService inventoryService = new InventoryService();
 
     public MenuController(Scanner scanner) {
         this.scanner = scanner;
@@ -34,12 +38,13 @@ public class MenuController {
         }
     }
 
-    public String selectMealTime() {
-        System.out.println("\nSelect Meal Time:");
+    public String selectSingleMealTime() {
+        System.out.println("\nSelect Meal Time Filter:");
         System.out.println("1. Morning");
         System.out.println("2. Afternoon");
-        System.out.println("3. Night");
-        System.out.println("4. Snacks");
+        System.out.println("3. Evening");
+        System.out.println("4. Night");
+        System.out.println("5. Snacks");
         System.out.print("Choice: ");
         int choice = scanner.nextInt();
         scanner.nextLine();
@@ -47,8 +52,9 @@ public class MenuController {
         return switch (choice) {
             case 1 -> "Morning";
             case 2 -> "Afternoon";
-            case 3 -> "Night";
-            case 4 -> "Snacks";
+            case 3 -> "Evening";
+            case 4 -> "Night";
+            case 5 -> "Snacks";
             default -> {
                 System.out.println("Invalid choice, defaulting to Snacks.");
                 yield "Snacks";
@@ -56,13 +62,43 @@ public class MenuController {
         };
     }
 
+    public List<Integer> selectMealTimes() {
+        System.out.println("\nSelect Meal Times (Enter numbers separated by spaces, e.g., '1 2'):");
+        System.out.println("1. Morning");
+        System.out.println("2. Afternoon");
+        System.out.println("3. Evening");
+        System.out.println("4. Night");
+        System.out.println("5. Snacks");
+        System.out.print("Choices: ");
+        String input = scanner.nextLine().trim();
+
+        List<Integer> selectedTimes = new ArrayList<>();
+        if (input.isEmpty()) return selectedTimes;
+
+        String[] parts = input.split("\\s+");
+        for (String part : parts) {
+            try {
+                int choice = Integer.parseInt(part);
+                if (choice >= 1 && choice <= 5) {
+                    selectedTimes.add(choice);
+                } else {
+                    System.out.println("Ignoring invalid choice: " + choice);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Ignoring non-number input: " + part);
+            }
+        }
+        return selectedTimes;
+    }
+
     public void displayMenu() {
         System.out.println("\nView menu for which meal time?");
         System.out.println("1. Morning");
         System.out.println("2. Afternoon");
-        System.out.println("3. Night");
-        System.out.println("4. Snacks");
-        System.out.println("5. All");
+        System.out.println("3. Evening");
+        System.out.println("4. Night");
+        System.out.println("5. Snacks");
+        System.out.println("6. All");
         System.out.print("Choice: ");
         int choice = scanner.nextInt();
         scanner.nextLine();
@@ -70,8 +106,9 @@ public class MenuController {
         String filter = switch (choice) {
             case 1 -> "Morning";
             case 2 -> "Afternoon";
-            case 3 -> "Night";
-            case 4 -> "Snacks";
+            case 3 -> "Evening";
+            case 4 -> "Night";
+            case 5 -> "Snacks";
             default -> "All";
         };
 
@@ -85,7 +122,7 @@ public class MenuController {
         int i = 1;
         for (MenuItem item : items) {
             System.out.println(i++ + ". [ID: " + item.getProductId() + "] "
-                    + "[" + item.getMealTime() + "] "
+                    + "[" + String.join(", ", item.getMealTimes()) + "] " // No quantity shown
                     + item.getName()
                     + " | " + item.getDescription()
                     + " | Price: ₹" + item.getPrice()
@@ -94,45 +131,56 @@ public class MenuController {
     }
 
     private void addItemFlow() {
-        // Step 1 - Product ID
-        System.out.print("Enter Product ID: ");
-        String productId = scanner.nextLine();
-
-        // Step 2 - Item details
-        System.out.print("Enter item name: ");
-        String name = scanner.nextLine();
-        System.out.print("Enter description: ");
-        String desc = scanner.nextLine();
-        System.out.print("Enter rating: ");
-        double rating = scanner.nextDouble();
-        scanner.nextLine();
-        System.out.print("Enter price: ₹");
-        double price = scanner.nextDouble();
-        scanner.nextLine();
-
-        // Step 3 - Meal time
-        String mealTime = selectMealTime();
-
-        // Step 4 - Check if same name exists in other meal times
-        List<String> existingMealTimes = service.getMealTimesForName(name);
-        if (!existingMealTimes.isEmpty()) {
-            System.out.println("Note: '" + name + "' already exists in: " + existingMealTimes);
-            System.out.print("Do you still want to add it for " + mealTime + "? (yes/no): ");
-            String confirm = scanner.nextLine();
-            if (!confirm.equalsIgnoreCase("yes")) {
-                System.out.println("Add cancelled.");
-                return;
-            }
+        System.out.println("\n--- Available Inventory Items ---");
+        Collection<InventoryItem> invItems = inventoryService.getAllInventoryItems();
+        if (invItems.isEmpty()) {
+            System.out.println("Inventory is empty! Please add items to inventory first.");
+            return;
         }
+        
+        for (InventoryItem iItem : invItems) {
+            // Note: Not showing quantity here in Menu UI per user request, though this is inventory list. We'll show basic details.
+            System.out.println("[ID: " + iItem.getProductId() + "] " + iItem.getName() + " | Price: ₹" + iItem.getPrice() + " | Unit: " + iItem.getUnit());
+        }
+        
+        // Step 1 - Product ID
+        System.out.print("\nEnter Product ID to add to Menu: ");
+        String productId = scanner.nextLine().trim();
 
-        // Step 5 - Check duplicate name + mealTime combo
-        if (service.existsByNameAndMealTime(name, mealTime)) {
-            System.out.println("'" + name + "' already exists in " + mealTime + " menu!");
+        // Step 1.5 - Validate Product ID
+        InventoryItem selectedInventory = inventoryService.getItemByProductId(productId);
+        if (selectedInventory == null) {
+            System.out.println("Product ID not found in inventory!");
             return;
         }
 
-        boolean added = service.addMenuItem(productId, name, desc, rating, price, mealTime);
-        System.out.println(added ? "Item added successfully!" : "Product ID already exists!");
+        // Check if menu item already exists
+        if (service.getItemByProductId(productId) != null) {
+            System.out.println("This item is already in the menu!");
+            return;
+        }
+
+        // Step 2 - Use inventory details automatically
+        String name = selectedInventory.getName();
+        double price = selectedInventory.getPrice();
+        
+        System.out.print("Enter Description for Menu Item: ");
+        String desc = scanner.nextLine();
+        
+        System.out.print("Enter Initial Rating (0.0 to 5.0): ");
+        double rating = scanner.nextDouble();
+        scanner.nextLine();
+        
+        System.out.println("Details: Name=" + name + ", Desc=" + desc + ", Price=₹" + price);
+
+        // Step 3 - Meal time
+        List<Integer> mealTimeIds = selectMealTimes();
+        if (mealTimeIds.isEmpty()) {
+            System.out.println("No meal times selected. Adding item but it won't be available in any specific time.");
+        }
+
+        boolean added = service.addMenuItem(productId, name, desc, rating, price, mealTimeIds);
+        System.out.println(added ? "Item automatically added out of inventory to Menu successfully!" : "Failed to add item!");
     }
 
     private void updateItemFlow() {
@@ -153,7 +201,7 @@ public class MenuController {
         System.out.println("Description : " + item.getDescription());
         System.out.println("Rating      : " + item.getRating());
         System.out.println("Price       : ₹" + item.getPrice());
-        System.out.println("Meal Time   : " + item.getMealTime());
+        System.out.println("Meal Times  : " + String.join(", ", item.getMealTimes()));
 
         // Step 4 - Ask what to update
         boolean updating = true;
@@ -163,7 +211,7 @@ public class MenuController {
             System.out.println("2. Description");
             System.out.println("3. Rating");
             System.out.println("4. Price");
-            System.out.println("5. Meal Time");
+            System.out.println("5. Meal Times");
             System.out.println("0. Done");
             System.out.print("Choice: ");
             int choice = scanner.nextInt();
@@ -195,9 +243,9 @@ public class MenuController {
                     System.out.println("Price updated!");
                 }
                 case 5 -> {
-                    String newMealTime = selectMealTime();
-                    service.updateField(productId, "mealTime", newMealTime);
-                    System.out.println("Meal Time updated!");
+                    List<Integer> newMealTimeIds = selectMealTimes();
+                    service.updateMealTimes(productId, newMealTimeIds);
+                    System.out.println("Meal Times updated!");
                 }
                 case 0 -> updating = false;
                 default -> System.out.println("Invalid choice");
@@ -217,7 +265,7 @@ public class MenuController {
             return;
         }
 
-        System.out.println("Deleting: [" + item.getMealTime() + "] "
+        System.out.println("Deleting: [" + String.join(", ", item.getMealTimes()) + "] "
                 + item.getName() + " | ₹" + item.getPrice());
         System.out.print("Confirm delete? (yes/no): ");
         String confirm = scanner.nextLine();
