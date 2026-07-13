@@ -26,10 +26,9 @@ public class CustomerLoginService {
         return null;
     }
 
-    public void addOrder(String username, String order) {
-        CustomerLogin customer = customerLoginRepo.findByUsername(username);
-        if (customer != null) {
-            customer.addOrder(order);
+        if (password == null || password.length() < 6) {
+            System.out.println("Password must be at least 6 characters!");
+            return false;
         }
     }
 
@@ -37,6 +36,7 @@ public class CustomerLoginService {
         return customerLoginRepo.addFeedback(username, orderId, message);
     }
 
+    // GET ALL CUSTOMERS
     public Collection<CustomerLogin> getAllCustomers() {
         return customerLoginRepo.getAllCustomers();
     }

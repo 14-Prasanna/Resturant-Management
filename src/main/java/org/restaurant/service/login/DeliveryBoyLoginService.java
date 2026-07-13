@@ -55,4 +55,4 @@ public class DeliveryBoyLoginService {
     public Collection<DeliveryBoyLogin> getAllDeliveryBoys() {
         return deliveryBoyLoginRepo.getAllDeliveryBoys();
     }
-}
+}

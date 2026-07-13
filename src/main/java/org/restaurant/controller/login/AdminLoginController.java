@@ -1,5 +1,8 @@
 package org.restaurant.controller.login;
 
+import java.util.List;
+import java.util.Scanner;
+
 import org.restaurant.controller.menu.MenuController;
 import org.restaurant.controller.inventory.InventoryController;
 import org.restaurant.model.login.CustomerLogin;
@@ -9,8 +12,6 @@ import org.restaurant.service.login.AdminLoginService;
 import org.restaurant.service.login.CustomerLoginService;
 import org.restaurant.service.login.DeliveryBoyLoginService;
 import org.restaurant.service.order.OrderService;
-import java.util.List;
-import java.util.Scanner;
 
 public class AdminLoginController {
     private Scanner scanner;
@@ -31,19 +32,68 @@ public class AdminLoginController {
 
     public void start() {
         System.out.println("\n--- Admin Login ---");
-        System.out.print("Username: ");
-        String username = scanner.nextLine();
-        System.out.print("Password: ");
-        String password = scanner.nextLine();
+        String username = null;
+        String password = null;
 
+        // Get and validate username
+        while (username == null || username.isEmpty()) {
+            System.out.print("Username: ");
+            username = scanner.nextLine().trim();
+            
+            if (username.isEmpty()) {
+                System.out.println("❌ Error: Username cannot be empty");
+                continue;
+            }
+            
+            // Check if username contains only numbers
+            if (username.matches("^[0-9]+$")) {
+                System.out.println("❌ Error: Only string value is allowed. Numbers are not permitted as username.");
+                username = null;
+                continue;
+            }
+        }
+
+        // Get and mask password
+        password = getHiddenPassword();
+
+        // Perform login with validation
         boolean success = adminLoginService.login(username, password);
 
         if (success) {
-            System.out.println("Login successful! Welcome, " + username);
+            System.out.println("✓ Login successful! Welcome, " + username);
             adminDashboard(username);
         } else {
-            System.out.println("Invalid credentials. Returning to main menu...");
+            System.out.println("❌ Invalid credentials. Returning to main menu...");
         }
+    }
+
+    /**
+     * Reads password from console while masking input
+     * Demonstrates encapsulation of password input logic
+     * @return the password entered (masked while typing)
+     */
+    private String getHiddenPassword() {
+        String password = "";
+        
+        System.out.print("Password: ");
+        try {
+            // Use Console.readPassword() for secure password input (masks characters)
+            char[] passwordChars = System.console().readPassword();
+            if (passwordChars != null) {
+                password = new String(passwordChars);
+                // Clear sensitive data from memory
+                java.util.Arrays.fill(passwordChars, ' ');
+            } else {
+                // Fallback if console is not available (IDE environment)
+                System.out.println("[Note: Password input masking not available in this environment]");
+                password = scanner.nextLine();
+            }
+        } catch (Exception e) {
+            // Fallback to regular input
+            password = scanner.nextLine();
+        }
+        
+        return password;
     }
 
     private void adminDashboard(String username) {

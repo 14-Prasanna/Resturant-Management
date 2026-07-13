@@ -67,6 +67,20 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Twilio -->
+    <dependency>
+      <groupId>com.twilio.sdk</groupId>
+      <artifactId>twilio</artifactId>
+      <version>10.1.2</version>
+    </dependency>
+
+    <!-- Dotenv -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>

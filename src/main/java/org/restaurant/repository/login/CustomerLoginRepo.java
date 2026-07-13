@@ -10,7 +10,8 @@ public class CustomerLoginRepo {
 
     private static CustomerLoginRepo instance;
 
-    private CustomerLoginRepo() {}
+    private CustomerLoginRepo() {
+    }
 
     public static CustomerLoginRepo getInstance() {
         if (instance == null) {
@@ -56,6 +57,7 @@ public class CustomerLoginRepo {
     // LOGIN – find customer by username
     // ─────────────────────────────────────────────
     public CustomerLogin findByUsername(String username) {
+
         String sql = "SELECT * FROM customer_login WHERE username = ?";
 
         try (Connection con = CleverCloudDB.getConnection();
@@ -72,9 +74,11 @@ public class CustomerLoginRepo {
                     );
                 }
             }
+
         } catch (Exception e) {
             System.out.println("❌ Login lookup error: " + e.getMessage());
         }
+
         return null;
     }
 
@@ -95,6 +99,7 @@ public class CustomerLoginRepo {
                         rs.getString("password")
                 ));
             }
+
         } catch (Exception e) {
             System.out.println("❌ Error fetching all customers: " + e.getMessage());
         }

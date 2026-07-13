@@ -1,3 +1,4 @@
+
 package org.restaurant.controller.login;
 
 import org.restaurant.controller.cart.CartController;
@@ -56,7 +57,9 @@ public class CustomerLoginController {
     }
 
     public void start() {
+
         while (true) {
+
             System.out.println("\n--- Customer Portal ---");
             System.out.println("1. Register");
             System.out.println("2. Login");
@@ -84,6 +87,7 @@ public class CustomerLoginController {
     }
 
     private void register() {
+
         System.out.println("\n--- Customer Register ---");
 
         System.out.print("Enter Username: ");
@@ -124,7 +128,12 @@ public class CustomerLoginController {
             CustomerLogin customer = customerLoginService.login(username, password);
 
             if (customer != null) {
-                System.out.println("Welcome, " + customer.getUsername() + "!");
+
+                System.out.println(
+                        "Welcome, " +
+                                customer.getUsername() + "!"
+                );
+
                 customerDashboard(customer);
             }
         } else {
@@ -133,6 +142,7 @@ public class CustomerLoginController {
     }
 
     private void login() {
+
         System.out.println("\n--- Customer Login ---");
 
         System.out.print("Username: ");
@@ -144,6 +154,7 @@ public class CustomerLoginController {
         CustomerLogin customer = customerLoginService.login(username, password);
 
         if (customer != null) {
+
             System.out.println("Welcome, " + customer.getUsername() + "!");
             customerDashboard(customer);
         } else {
@@ -152,9 +163,12 @@ public class CustomerLoginController {
     }
 
     private void customerDashboard(CustomerLogin customer) {
+
         while (true) {
+
             System.out.println("\n--- Customer Dashboard ---");
             System.out.println("Logged in as: " + customer.getUsername());
+
             System.out.println("1. View Menu");
             System.out.println("2. Add to Cart");
             System.out.println("3. View Cart");
@@ -164,6 +178,7 @@ public class CustomerLoginController {
             System.out.println("7. View My Past Orders");
             System.out.println("8. Submit Feedback / Report Issue");
             System.out.println("0. Logout");
+
             System.out.print("Choice: ");
 
             if (!scanner.hasNextInt()) {
@@ -190,8 +205,9 @@ public class CustomerLoginController {
                 case 0 -> {
                     System.out.println("Logged out.");
                     return;
-                }
-                default -> System.out.println("Invalid option.");
+
+                default:
+                    System.out.println("Invalid option.");
             }
         }
     }
